@@ -20,11 +20,22 @@ export default async function DashboardPage() {
         getCachedUser(user.id),
     ])
 
+    const fallbackUser = {
+        id: user.id,
+        email: user.email || '',
+        first_name: user.user_metadata?.first_name || 'Student',
+        last_name: user.user_metadata?.last_name || '',
+        xp_points: 0,
+        current_streak: 0,
+        badges: [],
+        completed_lessons: [],
+    }
+
     return (
         <DashboardClient
             lessons={lessons || []}
             progress={userProgress || []}
-            user={userData}
+            user={(userData as any) || fallbackUser}
         />
     )
 }

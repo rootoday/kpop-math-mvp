@@ -54,8 +54,12 @@ export const getCachedUser = cache(async (userId: string) => {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
-    if (error) throw error
+    if (error) {
+        console.error('Error fetching user profile:', error)
+        return null
+    }
+
     return data
 })
