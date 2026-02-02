@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { Database } from '@/types/database.types'
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
     const supabase = createRouteHandlerClient<Database>({ cookies })
     const { data: { user } } = await supabase.auth.getUser()
 

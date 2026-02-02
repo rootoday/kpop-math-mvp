@@ -1,4 +1,6 @@
-import type { Database } from './database.types'
+import type { Database, TierContent } from './database.types'
+
+export type { TierContent } from './database.types'
 
 // Type aliases for easier usage
 export type User = Database['public']['Tables']['users']['Row']

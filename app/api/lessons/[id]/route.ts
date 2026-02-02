@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import type { Database } from '@/types/database.types'
 
 export async function GET(
-    request: Request,
+    _request: Request,
     { params }: { params: { id: string } }
 ) {
     const supabase = createRouteHandlerClient<Database>({ cookies })

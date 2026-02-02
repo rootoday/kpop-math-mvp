@@ -133,6 +133,21 @@ export interface Database {
                 }
             }
         }
+        Views: {
+            [_ in never]: never
+        }
+        Functions: {
+            increment_user_xp: {
+                Args: {
+                    user_id: string
+                    xp_amount: number
+                }
+                Returns: undefined
+            }
+        }
+        Enums: {
+            [_ in never]: never
+        }
     }
 }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Lesson, UserProgress, User } from '@/types'
+import type { Lesson, UserProgress, User, TierContent } from '@/types'
 import confetti from 'canvas-confetti'
 
 interface LessonClientProps {
@@ -21,7 +21,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
     const [showFeedback, setShowFeedback] = useState(false)
     const [isCorrect, setIsCorrect] = useState(false)
 
-    const tierContent = lesson.tier_content as any
+    const tierContent = lesson.tier_content as unknown as TierContent
 
     const handleNext = async () => {
         if (currentTier < 5) {
@@ -116,7 +116,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                             onClick={() => router.push('/dashboard')}
                             className="text-gray-600 hover:text-gray-900"
                         >
-                            ← Back to Dashboard
+                            &larr; Back to Dashboard
                         </button>
                         <div className="text-sm text-gray-600">
                             Tier {currentTier}/5
@@ -137,7 +137,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                             <span className="text-gray-500">🎵 {lesson.artist} Image</span>
                         </div>
                         <button onClick={handleNext} className="btn-primary w-full">
-                            Let's Learn! →
+                            Let&apos;s Learn! &rarr;
                         </button>
                     </div>
                 )}
@@ -162,10 +162,10 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                         </div>
                         <div className="flex gap-4 mt-6">
                             <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                ← Previous
+                                &larr; Previous
                             </button>
                             <button onClick={handleNext} className="btn-primary flex-1">
-                                Next →
+                                Next &rarr;
                             </button>
                         </div>
                     </div>
@@ -182,8 +182,8 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                                     key={option.id}
                                     onClick={() => setSelectedAnswer(option.id)}
                                     className={`w-full p-4 text-left rounded-lg border-2 transition-all ${selectedAnswer === option.id
-                                            ? 'border-kpop-purple bg-purple-50'
-                                            : 'border-gray-300 hover:border-gray-400'
+                                        ? 'border-kpop-purple bg-purple-50'
+                                        : 'border-gray-300 hover:border-gray-400'
                                         }`}
                                 >
                                     {option.text}
@@ -202,7 +202,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
 
                         <div className="flex gap-4">
                             <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                ← Previous
+                                &larr; Previous
                             </button>
                             {!showFeedback ? (
                                 <button
@@ -214,7 +214,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                                 </button>
                             ) : (
                                 <button onClick={handleNext} className="btn-primary flex-1">
-                                    Next →
+                                    Next &rarr;
                                 </button>
                             )}
                         </div>
@@ -247,7 +247,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
 
                         <div className="flex gap-4">
                             <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                ← Previous
+                                &larr; Previous
                             </button>
                             {!showFeedback ? (
                                 <button
@@ -259,7 +259,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                                 </button>
                             ) : (
                                 <button onClick={handleNext} className="btn-primary flex-1">
-                                    Next →
+                                    Next &rarr;
                                 </button>
                             )}
                         </div>
