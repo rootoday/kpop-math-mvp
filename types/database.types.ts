@@ -6,8 +6,8 @@ export type Json =
     | { [key: string]: Json | undefined }
     | Json[]
 
-export interface Database {
-    public: {
+export type Database = {
+    Public: {
         Tables: {
             users: {
                 Row: {
@@ -17,7 +17,7 @@ export interface Database {
                     last_name: string
                     xp_points: number
                     badges: string[]
-                    completed_lessons: string[] // UUID[]
+                    completed_lessons: string[]
                     current_streak: number
                     last_login_date: string | null
                     created_at: string
@@ -57,7 +57,7 @@ export interface Database {
                     artist: string
                     math_concept: string
                     difficulty: 'beginner' | 'intermediate' | 'advanced'
-                    tier_content: TierContent
+                    tier_content: Json
                     created_at: string
                     updated_at: string
                 }
@@ -67,7 +67,7 @@ export interface Database {
                     artist: string
                     math_concept: string
                     difficulty?: 'beginner' | 'intermediate' | 'advanced'
-                    tier_content: TierContent
+                    tier_content: Json
                     created_at?: string
                     updated_at?: string
                 }
@@ -77,7 +77,7 @@ export interface Database {
                     artist?: string
                     math_concept?: string
                     difficulty?: 'beginner' | 'intermediate' | 'advanced'
-                    tier_content?: TierContent
+                    tier_content?: Json
                     created_at?: string
                     updated_at?: string
                 }
@@ -142,7 +142,7 @@ export interface Database {
                     user_id: string
                     xp_amount: number
                 }
-                Returns: undefined
+                Returns: void
             }
         }
         Enums: {
