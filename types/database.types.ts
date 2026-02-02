@@ -20,6 +20,7 @@ export type Database = {
                     completed_lessons: string[]
                     current_streak: number
                     last_login_date: string | null
+                    role: 'user' | 'admin'
                     created_at: string
                     updated_at: string
                 }
@@ -33,6 +34,7 @@ export type Database = {
                     completed_lessons?: string[]
                     current_streak?: number
                     last_login_date?: string | null
+                    role?: 'user' | 'admin'
                     created_at?: string
                     updated_at?: string
                 }
@@ -46,6 +48,7 @@ export type Database = {
                     completed_lessons?: string[]
                     current_streak?: number
                     last_login_date?: string | null
+                    role?: 'user' | 'admin'
                     created_at?: string
                     updated_at?: string
                 }
