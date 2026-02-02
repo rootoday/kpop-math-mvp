@@ -31,15 +31,15 @@ export default async function AdminLessonsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y">
-                        {lessons?.map((lesson) => (
+                        {(lessons as any[])?.map((lesson) => (
                             <tr key={lesson.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-kpop-purple">{lesson.artist}</td>
                                 <td className="px-6 py-4 text-gray-800">{lesson.title}</td>
                                 <td className="px-6 py-4 text-gray-600">{lesson.math_concept}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${lesson.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
-                                            lesson.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                                'bg-red-100 text-red-700'
+                                        lesson.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
                                         }`}>
                                         {lesson.difficulty}
                                     </span>

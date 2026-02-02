@@ -16,7 +16,7 @@ export default async function AdminLayout({
 
     const userData = await getCachedUser(authUser.id)
 
-    if (userData.role !== 'admin') {
+    if ((userData as any).role !== 'admin') {
         redirect('/dashboard')
     }
 

@@ -16,7 +16,7 @@ export default async function AdminDashboardPage() {
         .from('users')
         .select('xp_points')
 
-    const totalXp = usersData?.reduce((sum, u) => sum + (u.xp_points || 0), 0) || 0
+    const totalXp = (usersData as any[])?.reduce((sum, u) => sum + (u.xp_points || 0), 0) || 0
 
     return (
         <div className="animate-fade-in">
