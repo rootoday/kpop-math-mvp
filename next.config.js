@@ -4,9 +4,7 @@ const nextConfig = {
         domains: [],
         formats: ['image/avif', 'image/webp'],
     },
-    experimental: {
-        serverActions: true,
-    },
+    experimental: {},
     compress: true,
     poweredByHeader: false,
     reactStrictMode: true,
