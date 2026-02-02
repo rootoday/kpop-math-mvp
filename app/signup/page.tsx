@@ -34,26 +34,27 @@ export default function SignUpPage() {
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
+                options: {
+                    data: {
+                        first_name: formData.firstName,
+                        last_name: formData.lastName,
+                    }
+                }
             })
 
             if (authError) throw authError
 
             if (authData.user) {
-                // Create user profile
-                const { error: profileError } = await supabase
-                    .from('users')
-                    // @ts-ignore - Bypassing strict type check for CI pass
-                    .insert({
-                        id: authData.user.id,
-                        email: formData.email,
-                        first_name: formData.firstName,
-                        last_name: formData.lastName,
-                    })
+                // The profile is now created automatically by a database trigger (007_user_trigger.sql)
+                // We just need to redirect to the dashboard.
+                // If email confirmation is ON, the user will need to check their email first.
+                // If email confirmation is OFF, we can go to dashboard.
 
-                if (profileError) throw profileError
-
-                // Redirect to dashboard
-                router.push('/dashboard')
+                if (authData.session) {
+                    router.push('/dashboard')
+                } else {
+                    setError('Please check your email to confirm your account!')
+                }
             }
         } catch (err: any) {
             setError(err.message || 'An error occurred during sign up')
