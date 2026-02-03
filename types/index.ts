@@ -1,19 +1,18 @@
-import type { Database, TierContent } from './database.types'
-
-export type { TierContent } from './database.types'
+export type { Database, Json, TierContent, Tier1Content, Tier2Content, Tier3Content, Tier4Content, Tier5Content } from './database.types'
+import type { Database } from './database.types'
 
 // Type aliases for easier usage
-export type User = Database['Public']['Tables']['users']['Row']
-export type UserInsert = Database['Public']['Tables']['users']['Insert']
-export type UserUpdate = Database['Public']['Tables']['users']['Update']
+export type User = Database['public']['Tables']['users']['Row']
+export type UserInsert = Database['public']['Tables']['users']['Insert']
+export type UserUpdate = Database['public']['Tables']['users']['Update']
 
-export type Lesson = Database['Public']['Tables']['lessons']['Row']
-export type LessonInsert = Database['Public']['Tables']['lessons']['Insert']
-export type LessonUpdate = Database['Public']['Tables']['lessons']['Update']
+export type Lesson = Database['public']['Tables']['lessons']['Row']
+export type LessonInsert = Database['public']['Tables']['lessons']['Insert']
+export type LessonUpdate = Database['public']['Tables']['lessons']['Update']
 
-export type UserProgress = Database['Public']['Tables']['user_progress']['Row']
-export type UserProgressInsert = Database['Public']['Tables']['user_progress']['Insert']
-export type UserProgressUpdate = Database['Public']['Tables']['user_progress']['Update']
+export type UserProgress = Database['public']['Tables']['user_progress']['Row']
+export type UserProgressInsert = Database['public']['Tables']['user_progress']['Insert']
+export type UserProgressUpdate = Database['public']['Tables']['user_progress']['Update']
 
 // UI-specific types
 export interface DashboardStats {

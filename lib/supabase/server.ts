@@ -3,16 +3,18 @@ import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
 import { cache } from 'react'
 
-// Server-side Supabase client with React cache
-export const createServerClient = cache(() => {
-    return createServerComponentClient<Database>({ cookies })
-})
+// Server-side Supabase client factory
+export const createServerClient = () => {
+    return createServerComponentClient<Database>({
+        cookies: () => cookies()
+    })
+}
 
 // Cached data fetchers
-export const getCachedLessons = cache(async (difficulty?: string) => {
+export const getCachedLessons = cache(async (difficulty?: 'beginner' | 'intermediate' | 'advanced') => {
     const supabase = createServerClient()
 
-    let query = supabase
+    let query = (supabase as any)
         .from('lessons')
         .select('*')
         .order('created_at', { ascending: true })
@@ -30,7 +32,7 @@ export const getCachedLessons = cache(async (difficulty?: string) => {
 export const getCachedUserProgress = cache(async (userId: string) => {
     const supabase = createServerClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('user_progress')
         .select(`
       *,
@@ -50,7 +52,7 @@ export const getCachedUserProgress = cache(async (userId: string) => {
 export const getCachedUser = cache(async (userId: string) => {
     const supabase = createServerClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('users')
         .select('*')
         .eq('id', userId)

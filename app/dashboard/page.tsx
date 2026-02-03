@@ -1,5 +1,6 @@
 import { createServerClient, getCachedLessons, getCachedUserProgress, getCachedUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { User } from '@/types'
 import DashboardClient from './DashboardClient'
 
 // Enable static generation with revalidation
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
         getCachedUser(user.id),
     ])
 
-    const fallbackUser = {
+    const fallbackUser: User = {
         id: user.id,
         email: user.email || '',
         first_name: user.user_metadata?.first_name || 'Student',
@@ -29,13 +30,17 @@ export default async function DashboardPage() {
         current_streak: 0,
         badges: [],
         completed_lessons: [],
+        role: 'user',
+        last_login_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
     }
 
     return (
         <DashboardClient
             lessons={lessons || []}
             progress={userProgress || []}
-            user={(userData as any) || fallbackUser}
+            user={userData || fallbackUser}
         />
     )
 }

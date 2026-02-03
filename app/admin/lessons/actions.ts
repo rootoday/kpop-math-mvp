@@ -1,19 +1,22 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import type { Database } from '@/types/database.types'
 import type { TierContent } from '@/types'
 
 export async function createLesson(formData: FormData) {
-    const supabase = createServerClient()
+    const supabase = createServerActionClient<Database>({
+        cookies: () => cookies()
+    })
 
     const title = formData.get('title') as string
     const artist = formData.get('artist') as string
     const mathConcept = formData.get('math_concept') as string
     const difficulty = formData.get('difficulty') as 'beginner' | 'intermediate' | 'advanced'
 
-    // Parse tier_content from JSON string
     const tierContentRaw = formData.get('tier_content') as string
     let tierContent: TierContent
 
@@ -23,14 +26,14 @@ export async function createLesson(formData: FormData) {
         return { error: 'Invalid JSON format for tier content' }
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
         .from('lessons')
         .insert({
             title,
             artist,
             math_concept: mathConcept,
             difficulty,
-            tier_content: tierContent as any
+            tier_content: tierContent
         })
 
     if (error) {

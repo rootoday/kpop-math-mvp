@@ -4,15 +4,15 @@ export default async function AdminDashboardPage() {
     const supabase = createServerClient()
 
     // Fetch stats
-    const { count: userCount } = await supabase
+    const { count: userCount } = await (supabase as any)
         .from('users')
         .select('*', { count: 'exact', head: true })
 
-    const { count: lessonCount } = await supabase
+    const { count: lessonCount } = await (supabase as any)
         .from('lessons')
         .select('*', { count: 'exact', head: true })
 
-    const { data: usersData } = await supabase
+    const { data: usersData } = await (supabase as any)
         .from('users')
         .select('xp_points')
 

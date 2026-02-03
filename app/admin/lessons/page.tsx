@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export default async function AdminLessonsPage() {
     const supabase = createServerClient()
-    const { data: lessons, error } = await supabase
+    const { data: lessons, error } = await (supabase as any)
         .from('lessons')
         .select('*')
         .order('created_at', { ascending: false })
