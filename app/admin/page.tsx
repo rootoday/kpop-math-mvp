@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 
 export default async function AdminDashboardPage() {
     const supabase = createServerClient()
@@ -42,7 +43,9 @@ export default async function AdminDashboardPage() {
             <div className="mt-12">
                 <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
                 <div className="flex gap-4">
-                    <button className="btn-primary">Add New Lesson</button>
+                    <Link href="/admin/lessons/new" className="btn-primary">
+                        Add New Lesson
+                    </Link>
                     <button className="btn-secondary">Export User Data</button>
                 </div>
             </div>
