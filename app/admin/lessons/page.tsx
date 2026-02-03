@@ -16,7 +16,9 @@ export default async function AdminLessonsPage() {
         <div className="animate-fade-in">
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold">Manage Lessons</h2>
-                <button className="btn-primary">Create New Lesson</button>
+                <Link href="/admin/lessons/new" className="btn-primary">
+                    Create New Lesson
+                </Link>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
