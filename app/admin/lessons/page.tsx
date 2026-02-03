@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import LessonActions from './LessonActions'
 
 export default async function AdminLessonsPage() {
     const supabase = createServerClient()
@@ -47,8 +48,10 @@ export default async function AdminLessonsPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-sm font-medium">
-                                    <button className="text-kpop-purple hover:underline mr-4">Edit</button>
-                                    <button className="text-red-500 hover:underline">Delete</button>
+                                    <LessonActions
+                                        lessonId={lesson.id}
+                                        lessonTitle={lesson.title}
+                                    />
                                 </td>
                             </tr>
                         ))}

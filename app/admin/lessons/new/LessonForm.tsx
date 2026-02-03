@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { createLesson } from '../actions'
+import { createLesson, updateLesson } from '../actions'
 import type { TierContent } from '@/types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
 
-const initialTierContent: TierContent = {
+const defaultTierContent: TierContent = {
     tier1: {
         title: '',
         text: '',
@@ -48,13 +48,26 @@ const initialTierContent: TierContent = {
     }
 }
 
-export default function LessonForm() {
+interface LessonFormProps {
+    lessonId?: string
+    initialData?: {
+        title: string
+        artist: string
+        math_concept: string
+        difficulty: 'beginner' | 'intermediate' | 'advanced'
+        tier_content: TierContent
+    }
+}
+
+export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState(1)
 
     // Interactive state for all tiers
-    const [tierContent, setTierContent] = useState<TierContent>(initialTierContent)
+    const [tierContent, setTierContent] = useState<TierContent>(
+        initialData?.tier_content || defaultTierContent
+    )
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -65,7 +78,13 @@ export default function LessonForm() {
         // Convert the interactive object to JSON string for the server action
         formData.append('tier_content', JSON.stringify(tierContent))
 
-        const result = await createLesson(formData)
+        let result
+        if (lessonId) {
+            result = await updateLesson(lessonId, formData)
+        } else {
+            result = await createLesson(formData)
+        }
+
         if (result?.error) {
             setError(result.error)
             setLoading(false)
@@ -93,19 +112,41 @@ export default function LessonForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Lesson Title</label>
-                        <input name="title" required className="input-field mt-1" placeholder="e.g. Algebra with NewJeans" />
+                        <input
+                            name="title"
+                            required
+                            defaultValue={initialData?.title}
+                            className="input-field mt-1"
+                            placeholder="e.g. Algebra with NewJeans"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Artist</label>
-                        <input name="artist" required className="input-field mt-1" placeholder="e.g. NewJeans" />
+                        <input
+                            name="artist"
+                            required
+                            defaultValue={initialData?.artist}
+                            className="input-field mt-1"
+                            placeholder="e.g. NewJeans"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Math Concept</label>
-                        <input name="math_concept" required className="input-field mt-1" placeholder="e.g. Combined Like Terms" />
+                        <input
+                            name="math_concept"
+                            required
+                            defaultValue={initialData?.math_concept}
+                            className="input-field mt-1"
+                            placeholder="e.g. Combined Like Terms"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Difficulty</label>
-                        <select name="difficulty" className="input-field mt-1">
+                        <select
+                            name="difficulty"
+                            defaultValue={initialData?.difficulty || 'beginner'}
+                            className="input-field mt-1"
+                        >
                             <option value="beginner">Beginner</option>
                             <option value="intermediate">Intermediate</option>
                             <option value="advanced">Advanced</option>
@@ -123,8 +164,8 @@ export default function LessonForm() {
                             type="button"
                             onClick={() => setActiveTab(num)}
                             className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeTab === num
-                                ? 'border-kpop-purple text-kpop-purple bg-white'
-                                : 'border-transparent text-gray-400 hover:text-gray-600'
+                                    ? 'border-kpop-purple text-kpop-purple bg-white'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
                                 }`}
                         >
                             Tier {num}
@@ -171,7 +212,7 @@ export default function LessonForm() {
 
             <div className="flex justify-between items-center mt-8">
                 <div className="text-sm text-gray-500">
-                    💡 탭을 옮겨가며 5단계 내용을 모두 작성해 주세요. 내용을 모두 작성한 후 &apos;Create Lesson&apos;을 클릭하세요.
+                    💡 탭을 옮겨가며 5단계 내용을 모두 작성해 주세요. 내용을 모두 작성한 후 &apos;{lessonId ? 'Save Changes' : 'Create Lesson'}&apos;을 클릭하세요.
                 </div>
                 <div className="flex gap-4">
                     <button
@@ -186,7 +227,7 @@ export default function LessonForm() {
                         disabled={loading}
                         className="btn-primary min-w-[140px]"
                     >
-                        {loading ? 'Creating...' : 'Create Lesson'}
+                        {loading ? 'Processing...' : (lessonId ? 'Save Changes' : 'Create Lesson')}
                     </button>
                 </div>
             </div>
