@@ -28,20 +28,31 @@ export default async function LessonPage({ params }: { params: { id: string } })
         .select('*')
         .eq('user_id', user.id)
         .eq('lesson_id', params.id)
-        .single()
+        .maybeSingle()
 
     // Fetch user data
     const { data: userData } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
+
+    const fallbackUser = {
+        id: user.id,
+        email: user.email || '',
+        first_name: user.user_metadata?.first_name || 'Student',
+        last_name: user.user_metadata?.last_name || '',
+        xp_points: 0,
+        current_streak: 0,
+        badges: [],
+        completed_lessons: [],
+    }
 
     return (
         <LessonClient
             lesson={lesson}
             initialProgress={userProgress}
-            user={userData!}
+            user={(userData as any) || fallbackUser}
         />
     )
 }
