@@ -8,36 +8,3 @@
    Creating an optimized production build ...
  ??Compiled successfully
    Linting and checking validity of types ...
-   Collecting page data ...
-   Generating static pages (0/14) ...
-   Generating static pages (3/14) 
-   Generating static pages (6/14) 
-   Generating static pages (10/14) 
- ??Generating static pages (14/14)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                              Size     First Load JS
-????/                                    179 B          96.2 kB
-????/_not-found                          873 B          88.2 kB
-??? /admin                               140 B          87.5 kB
-??? /admin/lessons                       179 B          96.2 kB
-??? /admin/lessons/new                   1.62 kB        88.9 kB
-??? /admin/users                         140 B          87.5 kB
-??? /api/lessons                         0 B                0 B
-??? /api/lessons/[id]                    0 B                0 B
-??? /api/progress                        0 B                0 B
-??? /api/users/me                        0 B                0 B
-??? /dashboard                           1.44 kB         143 kB
-??? /lessons/[id]                        6.12 kB        93.4 kB
-????/login                               1.25 kB         151 kB
-????/signup                              1.47 kB         152 kB
-+ First Load JS shared by all            87.3 kB
-  ??chunks/117-e01e6f67efda6d14.js       31.7 kB
-  ??chunks/fd9d1056-9f91b5e418130764.js  53.6 kB
-  ??other shared chunks (total)          1.95 kB
-
-
-?? (Static)   prerendered as static content
-?  (Dynamic)  server-rendered on demand
-

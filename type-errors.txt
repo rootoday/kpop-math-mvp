@@ -2,18 +2,4 @@
 > kpop-math-mvp@0.1.0 type-check
 > tsc --noEmit
 
-app/admin/layout.tsx(19,31): error TS2339: Property 'role' does not exist on type 'never'.
-app/admin/lessons/actions.ts(31,10): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "lessons", never, "POST">', gave the following error.
-    Argument of type '{ title: string; artist: string; math_concept: string; difficulty: "beginner" | "intermediate" | "advanced"; tier_content: any; }' is not assignable to parameter of type 'never'.
-  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "lessons", never, "POST">', gave the following error.
-    Object literal may only specify known properties, and 'title' does not exist in type 'never[]'.
-app/admin/lessons/page.tsx(37,45): error TS2339: Property 'id' does not exist on type 'never'.
-app/admin/lessons/page.tsx(38,96): error TS2339: Property 'artist' does not exist on type 'never'.
-app/admin/lessons/page.tsx(39,81): error TS2339: Property 'title' does not exist on type 'never'.
-app/admin/lessons/page.tsx(40,81): error TS2339: Property 'math_concept' does not exist on type 'never'.
-app/admin/lessons/page.tsx(42,109): error TS2339: Property 'difficulty' does not exist on type 'never'.
-app/admin/lessons/page.tsx(43,48): error TS2339: Property 'difficulty' does not exist on type 'never'.
-app/admin/lessons/page.tsx(46,49): error TS2339: Property 'difficulty' does not exist on type 'never'.
-app/admin/page.tsx(19,60): error TS2339: Property 'xp_points' does not exist on type 'never'.
-test-types.ts(4,28): error TS2339: Property 'Public' does not exist on type 'Database'.
+app/admin/lessons/new/LessonForm.tsx(76,24): error TS7006: Parameter 'prev' implicitly has an 'any' type.
