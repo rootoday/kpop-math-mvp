@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
+import type { Tier1Content, Tier2Content, Tier3Content, Tier4Content, Tier5Content } from '@/types/database.types'
 
 interface Tier1EditorProps {
-    data: any
-    onChange: (data: any) => void
+    data: Tier1Content
+    onChange: (data: Tier1Content) => void
 }
 
 export function Tier1Editor({ data, onChange }: Tier1EditorProps) {
@@ -53,8 +54,8 @@ export function Tier1Editor({ data, onChange }: Tier1EditorProps) {
 }
 
 interface Tier2EditorProps {
-    data: any
-    onChange: (data: any) => void
+    data: Tier2Content
+    onChange: (data: Tier2Content) => void
 }
 
 export function Tier2Editor({ data, onChange }: Tier2EditorProps) {
@@ -65,8 +66,8 @@ export function Tier2Editor({ data, onChange }: Tier2EditorProps) {
     }
 
     const removeStep = (index: number) => {
-        const newSteps = data.steps.filter((_: any, i: number) => i !== index)
-            .map((s: any, i: number) => ({ ...s, stepNumber: i + 1 }))
+        const newSteps = data.steps.filter((_, i) => i !== index)
+            .map((s, i) => ({ ...s, stepNumber: i + 1 }))
         onChange({ ...data, steps: newSteps })
     }
 
@@ -91,7 +92,7 @@ export function Tier2Editor({ data, onChange }: Tier2EditorProps) {
 
             <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700">Steps</label>
-                {data.steps.map((step: any, index: number) => (
+                {data.steps.map((step, index) => (
                     <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50 relative group">
                         <button
                             type="button"
@@ -139,8 +140,8 @@ export function Tier2Editor({ data, onChange }: Tier2EditorProps) {
 }
 
 interface Tier3EditorProps {
-    data: any
-    onChange: (data: any) => void
+    data: Tier3Content
+    onChange: (data: Tier3Content) => void
 }
 
 export function Tier3Editor({ data, onChange }: Tier3EditorProps) {
@@ -151,7 +152,7 @@ export function Tier3Editor({ data, onChange }: Tier3EditorProps) {
     }
 
     const setCorrect = (index: number) => {
-        const newOptions = data.options.map((opt: any, i: number) => ({
+        const newOptions = data.options.map((opt, i) => ({
             ...opt,
             isCorrect: i === index
         }))
@@ -174,7 +175,7 @@ export function Tier3Editor({ data, onChange }: Tier3EditorProps) {
 
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">Options (Select the correct one)</label>
-                {data.options.map((opt: any, index: number) => (
+                {data.options.map((opt, index) => (
                     <div key={opt.id} className="flex items-center gap-3">
                         <input
                             type="radio"
@@ -207,8 +208,8 @@ export function Tier3Editor({ data, onChange }: Tier3EditorProps) {
 }
 
 interface Tier4EditorProps {
-    data: any
-    onChange: (data: any) => void
+    data: Tier4Content
+    onChange: (data: Tier4Content) => void
 }
 
 export function Tier4Editor({ data, onChange }: Tier4EditorProps) {
@@ -253,8 +254,8 @@ export function Tier4Editor({ data, onChange }: Tier4EditorProps) {
 }
 
 interface Tier5EditorProps {
-    data: any
-    onChange: (data: any) => void
+    data: Tier5Content
+    onChange: (data: Tier5Content) => void
 }
 
 export function Tier5Editor({ data, onChange }: Tier5EditorProps) {

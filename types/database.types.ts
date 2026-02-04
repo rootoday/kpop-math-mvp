@@ -154,9 +154,61 @@ export interface Database {
     }
 }
 
-export type TierContent = any
-export type Tier1Content = any
-export type Tier2Content = any
-export type Tier3Content = any
-export type Tier4Content = any
-export type Tier5Content = any
+// Base interface for all tiers with common metadata
+export type TierLevel = 1 | 2 | 3 | 4 | 5;
+
+export interface BaseTier {
+    tier: TierLevel;
+    title: string;
+    shortDescription: string;
+    learningObjective: string;
+    estimatedMinutes: number;
+}
+
+// Specific content structures for each tier
+export interface Tier1Content extends BaseTier {
+    text: string;
+    imageUrl: string;
+    duration: number; // Kept for backward compatibility, sync with estimatedMinutes
+}
+
+export interface Tier2Content extends BaseTier {
+    steps: Array<{ stepNumber: number; text: string; animation: string }>;
+    duration: number;
+}
+
+export interface Tier3Content extends BaseTier {
+    questionText: string;
+    questionType: 'multiple_choice';
+    options: Array<{ id: string; text: string; isCorrect: boolean }>;
+    xpReward: number;
+    hint: string;
+}
+
+export interface Tier4Content extends BaseTier {
+    questionText: string;
+    questionType: 'fill_in_blank';
+    correctAnswer: string;
+    acceptableAnswers: string[];
+    inputType: 'text' | 'number';
+    xpReward: number;
+    hint: string;
+}
+
+export interface Tier5Content extends BaseTier {
+    congratsText: string;
+    summaryText: string;
+    totalXpReward: number;
+    badgeEarned: string | null;
+    nextLessonId: string | null;
+    celebrationAnimation: string;
+}
+
+// Consolidated type for the entire JSON column
+export interface TierContent {
+    tier1: Tier1Content;
+    tier2: Tier2Content;
+    tier3: Tier3Content;
+    tier4: Tier4Content;
+    tier5: Tier5Content;
+}

@@ -1,23 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { createLesson, updateLesson } from '../actions'
-import type { TierContent } from '@/types'
+import type { TierContent } from '@/types/database.types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
+import TierBlockEditor from '@/components/lessons/TierBlockEditor'
 
 const defaultTierContent: TierContent = {
     tier1: {
-        title: '',
+        tier: 1,
+        title: 'Introduction',
+        shortDescription: 'Basic concept introduction',
+        learningObjective: 'Understand the core concept',
+        estimatedMinutes: 5,
         text: '',
         imageUrl: '',
         duration: 30
     },
     tier2: {
-        title: '',
+        tier: 2,
+        title: 'Step-by-Step',
+        shortDescription: 'Guided walkthrough',
+        learningObjective: 'Follow the process',
+        estimatedMinutes: 10,
         steps: [{ stepNumber: 1, text: '', animation: 'fade-in' }],
         duration: 60
     },
     tier3: {
+        tier: 3,
+        title: 'Practice Quiz',
+        shortDescription: 'Multiple choice questions',
+        learningObjective: 'Test understanding',
+        estimatedMinutes: 5,
         questionText: '',
         questionType: 'multiple_choice',
         options: [
@@ -30,6 +44,11 @@ const defaultTierContent: TierContent = {
         hint: ''
     },
     tier4: {
+        tier: 4,
+        title: 'Challenge',
+        shortDescription: 'Fill in the blank',
+        learningObjective: 'Apply knowledge',
+        estimatedMinutes: 8,
         questionText: '',
         questionType: 'fill_in_blank',
         correctAnswer: '',
@@ -39,6 +58,11 @@ const defaultTierContent: TierContent = {
         hint: ''
     },
     tier5: {
+        tier: 5,
+        title: 'Conclusion',
+        shortDescription: 'Summary and Reward',
+        learningObjective: 'Review and celebrate',
+        estimatedMinutes: 2,
         congratsText: '',
         summaryText: '',
         totalXpReward: 50,
@@ -63,7 +87,6 @@ interface LessonFormProps {
 export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [activeTab, setActiveTab] = useState(1)
 
     // Interactive state for all tiers
     const [tierContent, setTierContent] = useState<TierContent>(
@@ -168,64 +191,53 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                 </div>
             </div>
 
-            {/* Interactive Tier Editor */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="flex border-b overflow-x-auto bg-gray-50">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                        <button
-                            key={num}
-                            type="button"
-                            onClick={() => setActiveTab(num)}
-                            className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeTab === num
-                                ? 'border-kpop-purple text-kpop-purple bg-white'
-                                : 'border-transparent text-gray-400 hover:text-gray-600'
-                                }`}
-                        >
-                            Tier {num}
-                            <span className="ml-2 text-[10px] opacity-60">
-                                {num === 1 ? 'Intro' : num === 2 ? 'Steps' : num === 3 ? 'MCQ' : num === 4 ? 'Blank' : 'Reward'}
-                            </span>
-                        </button>
-                    ))}
-                </div>
+            {/* Interactive Tier Stack */}
+            <div className="space-y-4">
+                <TierBlockEditor
+                    tierNumber={1}
+                    data={tierContent.tier1}
+                    onChange={(d) => updateTier('tier1', d)}
+                    isDefaultOpen={true}
+                >
+                    <Tier1Editor data={tierContent.tier1} onChange={(d) => updateTier('tier1', d)} />
+                </TierBlockEditor>
 
-                <div className="p-8">
-                    {activeTab === 1 && (
-                        <Tier1Editor
-                            data={tierContent.tier1}
-                            onChange={(data) => updateTier('tier1', data)}
-                        />
-                    )}
-                    {activeTab === 2 && (
-                        <Tier2Editor
-                            data={tierContent.tier2}
-                            onChange={(data) => updateTier('tier2', data)}
-                        />
-                    )}
-                    {activeTab === 3 && (
-                        <Tier3Editor
-                            data={tierContent.tier3}
-                            onChange={(data) => updateTier('tier3', data)}
-                        />
-                    )}
-                    {activeTab === 4 && (
-                        <Tier4Editor
-                            data={tierContent.tier4}
-                            onChange={(data) => updateTier('tier4', data)}
-                        />
-                    )}
-                    {activeTab === 5 && (
-                        <Tier5Editor
-                            data={tierContent.tier5}
-                            onChange={(data) => updateTier('tier5', data)}
-                        />
-                    )}
-                </div>
+                <TierBlockEditor
+                    tierNumber={2}
+                    data={tierContent.tier2}
+                    onChange={(d) => updateTier('tier2', d)}
+                >
+                    <Tier2Editor data={tierContent.tier2} onChange={(d) => updateTier('tier2', d)} />
+                </TierBlockEditor>
+
+                <TierBlockEditor
+                    tierNumber={3}
+                    data={tierContent.tier3}
+                    onChange={(d) => updateTier('tier3', d)}
+                >
+                    <Tier3Editor data={tierContent.tier3} onChange={(d) => updateTier('tier3', d)} />
+                </TierBlockEditor>
+
+                <TierBlockEditor
+                    tierNumber={4}
+                    data={tierContent.tier4}
+                    onChange={(d) => updateTier('tier4', d)}
+                >
+                    <Tier4Editor data={tierContent.tier4} onChange={(d) => updateTier('tier4', d)} />
+                </TierBlockEditor>
+
+                <TierBlockEditor
+                    tierNumber={5}
+                    data={tierContent.tier5}
+                    onChange={(d) => updateTier('tier5', d)}
+                >
+                    <Tier5Editor data={tierContent.tier5} onChange={(d) => updateTier('tier5', d)} />
+                </TierBlockEditor>
             </div>
 
-            <div className="flex justify-between items-center mt-8">
+            <div className="flex justify-between items-center mt-8 sticky bottom-0 bg-white/90 backdrop-blur p-4 border-t z-10">
                 <div className="text-sm text-gray-500">
-                    💡 탭을 옮겨가며 5단계 내용을 모두 작성해 주세요. 내용을 모두 작성한 후 &apos;{lessonId ? 'Save Changes' : 'Create Lesson'}&apos;을 클릭하세요.
+                    💡 각 Tier의 내용을 꼼꼼히 작성해 주세요. 완료되면 우측 하단 버튼을 누르세요.
                 </div>
                 <div className="flex gap-4">
                     <button
