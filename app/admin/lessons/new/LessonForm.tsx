@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { createLesson, updateLesson } from '../actions'
 import type { TierContent } from '@/types/database.types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
 import TierBlockEditor from '@/components/lessons/TierBlockEditor'
+import { useUndoRedo } from '@/lib/hooks/useUndoRedo'
+import { useAutoSave } from '@/lib/hooks/useAutoSave'
 
 const defaultTierContent: TierContent = {
     tier1: {
@@ -84,62 +86,159 @@ interface LessonFormProps {
     }
 }
 
+// Unified State for Undo/Redo
+interface LessonState {
+    title: string
+    artist: string
+    math_concept: string
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+    tier_content: TierContent
+    is_published: boolean
+}
+
 export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    // 1. Initialize Hook with Unified State
+    const { state, setState, undo, redo, canUndo, canRedo } = useUndoRedo<LessonState>({
+        title: initialData?.title || '',
+        artist: initialData?.artist || '',
+        math_concept: initialData?.math_concept || '',
+        difficulty: initialData?.difficulty || 'beginner',
+        tier_content: initialData?.tier_content || defaultTierContent,
+        is_published: initialData?.is_published || false
+    })
 
-    // Interactive state for all tiers
-    const [tierContent, setTierContent] = useState<TierContent>(
-        initialData?.tier_content || defaultTierContent
-    )
+    // 2. Setup Auto-Save
+    const handleSave = useCallback(async (data: LessonState) => {
+        if (!lessonId) return // Don't auto-save new lessons until created
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
+        const formData = new FormData()
+        formData.append('title', data.title)
+        formData.append('artist', data.artist)
+        formData.append('math_concept', data.math_concept)
+        formData.append('difficulty', data.difficulty)
+        formData.append('tier_content', JSON.stringify(data.tier_content))
+        if (data.is_published) formData.append('is_published', 'true')
 
-        const formData = new FormData(e.currentTarget)
-        // Convert the interactive object to JSON string for the server action
-        formData.append('tier_content', JSON.stringify(tierContent))
+        return await updateLesson(lessonId, formData)
+    }, [lessonId])
 
-        let result
-        if (lessonId) {
-            result = await updateLesson(lessonId, formData)
-        } else {
-            result = await createLesson(formData)
+    const { status: saveStatus, lastSavedTime } = useAutoSave({
+        data: state,
+        onSave: handleSave,
+        debounceMs: 2000
+    })
+
+    // 3. Unsaved Changes Warning
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (saveStatus === 'saving' || saveStatus === 'idle') { // simplistic check
+                // In a real app we'd check if 'dirty', but 'idle' usually means dirty waiting to debounce
+                // Here, let's just warn if we are saving or if changes happened
+            }
         }
+        // Simplified: React handles this poorly usually.
+        // For now, let's skip browser native dialog which is obtrusive during dev.
+    }, [saveStatus])
 
-        if (result?.error) {
-            setError(result.error)
-            setLoading(false)
+    // Keyboard Shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault()
+                if (e.shiftKey) {
+                    if (canRedo) redo()
+                } else {
+                    if (canUndo) undo()
+                }
+            }
         }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [undo, redo, canUndo, canRedo])
+
+    const updateField = (field: keyof LessonState, value: any) => {
+        setState({ ...state, [field]: value })
     }
 
     const updateTier = (tierKey: keyof TierContent, data: any) => {
-        setTierContent((prev: TierContent) => ({
-            ...prev,
-            [tierKey]: data
-        }))
+        setState({
+            ...state,
+            tier_content: {
+                ...state.tier_content,
+                [tierKey]: data
+            }
+        })
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    {error}
+        <div className="space-y-6">
+            {/* Header Controls */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-4 rounded-xl border border-gray-200 gap-4">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={undo}
+                        disabled={!canUndo}
+                        className={`p-2 rounded hover:bg-white border border-transparent hover:border-gray-300 transition-all ${!canUndo ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}`}
+                        title="Undo (Ctrl+Z)"
+                    >
+                        <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={redo}
+                        disabled={!canRedo}
+                        className={`p-2 rounded hover:bg-white border border-transparent hover:border-gray-300 transition-all ${!canRedo ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}`}
+                        title="Redo (Ctrl+Shift+Z)"
+                    >
+                        <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+                        </svg>
+                    </button>
+                    <div className="h-6 w-px bg-gray-300 mx-2"></div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gray-500 uppercase">Save Status</span>
+                        <div className="flex items-center gap-2 text-sm">
+                            {saveStatus === 'saving' && (
+                                <>
+                                    <div className="w-3 h-3 rounded-full border-2 border-kpop-purple border-t-transparent animate-spin"></div>
+                                    <span className="text-kpop-purple font-medium">Saving...</span>
+                                </>
+                            )}
+                            {saveStatus === 'saved' && (
+                                <span className="text-green-600 font-medium flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Saved at {lastSavedTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            )}
+                            {saveStatus === 'error' && (
+                                <span className="text-red-500 font-medium">Save Failed</span>
+                            )}
+                            {saveStatus === 'idle' && !lastSavedTime && (
+                                <span className="text-gray-400">Waiting for changes...</span>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            )}
 
-            {/* Basic Lesson Info */}
+                {!lessonId && (
+                    <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded border border-yellow-200">
+                        Auto-save disabled until Created
+                    </div>
+                )}
+            </div>
+
+            {/* Basic Lesson Info - Controlled Inputs */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
                 <h3 className="text-lg font-bold mb-4 text-gray-800">Basic Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Lesson Title</label>
                         <input
-                            name="title"
-                            required
-                            defaultValue={initialData?.title}
+                            value={state.title}
+                            onChange={(e) => updateField('title', e.target.value)}
                             className="input-field mt-1"
                             placeholder="e.g. Algebra with NewJeans"
                         />
@@ -147,9 +246,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Artist</label>
                         <input
-                            name="artist"
-                            required
-                            defaultValue={initialData?.artist}
+                            value={state.artist}
+                            onChange={(e) => updateField('artist', e.target.value)}
                             className="input-field mt-1"
                             placeholder="e.g. NewJeans"
                         />
@@ -157,9 +255,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Math Concept</label>
                         <input
-                            name="math_concept"
-                            required
-                            defaultValue={initialData?.math_concept}
+                            value={state.math_concept}
+                            onChange={(e) => updateField('math_concept', e.target.value)}
                             className="input-field mt-1"
                             placeholder="e.g. Combined Like Terms"
                         />
@@ -167,8 +264,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Difficulty</label>
                         <select
-                            name="difficulty"
-                            defaultValue={initialData?.difficulty || 'beginner'}
+                            value={state.difficulty}
+                            onChange={(e) => updateField('difficulty', e.target.value)}
                             className="input-field mt-1"
                         >
                             <option value="beginner">Beginner</option>
@@ -180,9 +277,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                         <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
-                                name="is_published"
-                                value="true"
-                                defaultChecked={initialData?.is_published}
+                                checked={state.is_published}
+                                onChange={(e) => updateField('is_published', e.target.checked)}
                                 className="w-5 h-5 text-kpop-purple rounded border-gray-300 focus:ring-kpop-purple"
                             />
                             <span className="ml-2 text-sm font-medium text-gray-700">Publish Lesson</span>
@@ -191,53 +287,54 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                 </div>
             </div>
 
-            {/* Interactive Tier Stack */}
+            {/* Interactive Tier Stack - Controlled Inputs */}
             <div className="space-y-4">
                 <TierBlockEditor
                     tierNumber={1}
-                    data={tierContent.tier1}
+                    data={state.tier_content.tier1}
                     onChange={(d) => updateTier('tier1', d)}
                     isDefaultOpen={true}
                 >
-                    <Tier1Editor data={tierContent.tier1} onChange={(d) => updateTier('tier1', d)} />
+                    <Tier1Editor data={state.tier_content.tier1} onChange={(d) => updateTier('tier1', d)} />
                 </TierBlockEditor>
 
                 <TierBlockEditor
                     tierNumber={2}
-                    data={tierContent.tier2}
+                    data={state.tier_content.tier2}
                     onChange={(d) => updateTier('tier2', d)}
                 >
-                    <Tier2Editor data={tierContent.tier2} onChange={(d) => updateTier('tier2', d)} />
+                    <Tier2Editor data={state.tier_content.tier2} onChange={(d) => updateTier('tier2', d)} />
                 </TierBlockEditor>
 
                 <TierBlockEditor
                     tierNumber={3}
-                    data={tierContent.tier3}
+                    data={state.tier_content.tier3}
                     onChange={(d) => updateTier('tier3', d)}
                 >
-                    <Tier3Editor data={tierContent.tier3} onChange={(d) => updateTier('tier3', d)} />
+                    <Tier3Editor data={state.tier_content.tier3} onChange={(d) => updateTier('tier3', d)} />
                 </TierBlockEditor>
 
                 <TierBlockEditor
                     tierNumber={4}
-                    data={tierContent.tier4}
+                    data={state.tier_content.tier4}
                     onChange={(d) => updateTier('tier4', d)}
                 >
-                    <Tier4Editor data={tierContent.tier4} onChange={(d) => updateTier('tier4', d)} />
+                    <Tier4Editor data={state.tier_content.tier4} onChange={(d) => updateTier('tier4', d)} />
                 </TierBlockEditor>
 
                 <TierBlockEditor
                     tierNumber={5}
-                    data={tierContent.tier5}
+                    data={state.tier_content.tier5}
                     onChange={(d) => updateTier('tier5', d)}
                 >
-                    <Tier5Editor data={tierContent.tier5} onChange={(d) => updateTier('tier5', d)} />
+                    <Tier5Editor data={state.tier_content.tier5} onChange={(d) => updateTier('tier5', d)} />
                 </TierBlockEditor>
             </div>
 
+            {/* Manual Save / Create Button */}
             <div className="flex justify-between items-center mt-8 sticky bottom-0 bg-white/90 backdrop-blur p-4 border-t z-10">
                 <div className="text-sm text-gray-500">
-                    💡 각 Tier의 내용을 꼼꼼히 작성해 주세요. 완료되면 우측 하단 버튼을 누르세요.
+                    {lessonId ? 'Changes serve as autosave drafts.' : 'Create lesson to enable auto-save.'}
                 </div>
                 <div className="flex gap-4">
                     <button
@@ -245,17 +342,27 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                         onClick={() => window.history.back()}
                         className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                     >
-                        Cancel
+                        Back
                     </button>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn-primary min-w-[140px]"
-                    >
-                        {loading ? 'Processing...' : (lessonId ? 'Save Changes' : 'Create Lesson')}
-                    </button>
+                    {!lessonId && (
+                        <button
+                            onClick={async () => {
+                                const formData = new FormData()
+                                formData.append('title', state.title)
+                                formData.append('artist', state.artist)
+                                formData.append('math_concept', state.math_concept)
+                                formData.append('difficulty', state.difficulty)
+                                formData.append('tier_content', JSON.stringify(state.tier_content))
+                                if (state.is_published) formData.append('is_published', 'true')
+                                await createLesson(formData)
+                            }}
+                            className="btn-primary min-w-[140px]"
+                        >
+                            Create Lesson
+                        </button>
+                    )}
                 </div>
             </div>
-        </form>
+        </div>
     )
 }
