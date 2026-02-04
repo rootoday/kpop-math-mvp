@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import LessonActions from './LessonActions'
+import LessonManager from './LessonManager'
+import type { Database } from '@/types/database.types'
 
 export default async function AdminLessonsPage() {
     const supabase = createServerClient()
@@ -14,50 +14,17 @@ export default async function AdminLessonsPage() {
     }
 
     return (
-        <div className="animate-fade-in">
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold">Manage Lessons</h2>
-                <Link href="/admin/lessons/new" className="btn-primary">
-                    Create New Lesson
-                </Link>
+        <div className="animate-fade-in h-[calc(100vh-100px)]">
+            <div className="mb-6 flex justify-between items-center">
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                    Lesson Management
+                </h2>
+                <div className="text-sm text-gray-500 font-medium">
+                    {(lessons as any[]).length} Total Lessons
+                </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold text-sm text-gray-700">Artist</th>
-                            <th className="px-6 py-4 font-semibold text-sm text-gray-700">Title</th>
-                            <th className="px-6 py-4 font-semibold text-sm text-gray-700">Concept</th>
-                            <th className="px-6 py-4 font-semibold text-sm text-gray-700">Difficulty</th>
-                            <th className="px-6 py-4 font-semibold text-sm text-gray-700">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                        {(lessons as any[])?.map((lesson) => (
-                            <tr key={lesson.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-kpop-purple">{lesson.artist}</td>
-                                <td className="px-6 py-4 text-gray-800">{lesson.title}</td>
-                                <td className="px-6 py-4 text-gray-600">{lesson.math_concept}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${lesson.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
-                                        lesson.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-red-100 text-red-700'
-                                        }`}>
-                                        {lesson.difficulty}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm font-medium">
-                                    <LessonActions
-                                        lessonId={lesson.id}
-                                        lessonTitle={lesson.title}
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <LessonManager initialLessons={lessons as any[]} />
         </div>
     )
 }

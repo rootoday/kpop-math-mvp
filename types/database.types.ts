@@ -19,6 +19,7 @@ export interface Database {
                     math_concept: string
                     difficulty: 'beginner' | 'intermediate' | 'advanced'
                     tier_content: any
+                    is_published: boolean
                 }
                 Insert: {
                     id?: string
@@ -29,6 +30,7 @@ export interface Database {
                     math_concept: string
                     difficulty?: 'beginner' | 'intermediate' | 'advanced'
                     tier_content: any
+                    is_published?: boolean
                 }
                 Update: {
                     id?: string
@@ -39,6 +41,7 @@ export interface Database {
                     math_concept?: string
                     difficulty?: 'beginner' | 'intermediate' | 'advanced'
                     tier_content?: any
+                    is_published?: boolean
                 }
                 Relationships: any[]
             }

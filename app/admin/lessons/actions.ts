@@ -16,6 +16,7 @@ export async function createLesson(formData: FormData) {
     const artist = formData.get('artist') as string
     const mathConcept = formData.get('math_concept') as string
     const difficulty = formData.get('difficulty') as 'beginner' | 'intermediate' | 'advanced'
+    const isPublished = formData.get('is_published') === 'true'
 
     const tierContentRaw = formData.get('tier_content') as string
     let tierContent: TierContent
@@ -33,7 +34,8 @@ export async function createLesson(formData: FormData) {
             artist,
             math_concept: mathConcept,
             difficulty,
-            tier_content: tierContent
+            tier_content: tierContent,
+            is_published: isPublished
         })
 
     if (error) {
@@ -54,6 +56,7 @@ export async function updateLesson(id: string, formData: FormData) {
     const artist = formData.get('artist') as string
     const mathConcept = formData.get('math_concept') as string
     const difficulty = formData.get('difficulty') as 'beginner' | 'intermediate' | 'advanced'
+    const isPublished = formData.get('is_published') === 'true'
 
     const tierContentRaw = formData.get('tier_content') as string
     let tierContent: TierContent
@@ -72,6 +75,7 @@ export async function updateLesson(id: string, formData: FormData) {
             math_concept: mathConcept,
             difficulty,
             tier_content: tierContent,
+            is_published: isPublished,
             updated_at: new Date().toISOString()
         })
         .eq('id', id)

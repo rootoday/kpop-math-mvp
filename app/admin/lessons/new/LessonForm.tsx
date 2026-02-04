@@ -56,6 +56,7 @@ interface LessonFormProps {
         math_concept: string
         difficulty: 'beginner' | 'intermediate' | 'advanced'
         tier_content: TierContent
+        is_published?: boolean
     }
 }
 
@@ -152,6 +153,18 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                             <option value="advanced">Advanced</option>
                         </select>
                     </div>
+                    <div className="flex items-center h-full pt-6">
+                        <label className="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="is_published"
+                                value="true"
+                                defaultChecked={initialData?.is_published}
+                                className="w-5 h-5 text-kpop-purple rounded border-gray-300 focus:ring-kpop-purple"
+                            />
+                            <span className="ml-2 text-sm font-medium text-gray-700">Publish Lesson</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -164,8 +177,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                             type="button"
                             onClick={() => setActiveTab(num)}
                             className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeTab === num
-                                    ? 'border-kpop-purple text-kpop-purple bg-white'
-                                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                                ? 'border-kpop-purple text-kpop-purple bg-white'
+                                : 'border-transparent text-gray-400 hover:text-gray-600'
                                 }`}
                         >
                             Tier {num}
