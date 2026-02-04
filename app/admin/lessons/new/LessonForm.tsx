@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import { createLesson, updateLesson } from '../actions'
 import type { TierContent } from '@/types/database.types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
@@ -108,6 +108,8 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
     })
 
     // 2. Setup Auto-Save
+    const [error, setError] = useState<string | null>(null)
+
     const handleSave = useCallback(async (data: LessonState) => {
         if (!lessonId) return // Don't auto-save new lessons until created
 
@@ -122,7 +124,7 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
         return await updateLesson(lessonId, formData)
     }, [lessonId])
 
-    const { status: saveStatus, lastSavedTime } = useAutoSave({
+    const { status: saveStatus, lastSavedTime, error: saveError } = useAutoSave({
         data: state,
         onSave: handleSave,
         debounceMs: 2000
@@ -230,9 +232,32 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                 )}
             </div>
 
+            {error && (
+                <div role="alert" className="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in mb-6">
+                    <div className="flex items-center">
+                        <svg className="w-5 h-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span className="text-red-700 font-medium text-sm">{error}</span>
+                    </div>
+                    <button
+                        onClick={() => setError(null)}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                        aria-label="Dismiss error"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+
             {/* Basic Lesson Info - Controlled Inputs */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-                <h3 className="text-lg font-bold mb-4 text-gray-800">Basic Information</h3>
+                <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+                    <div className="w-1 h-6 bg-kpop-purple rounded-full"></div>
+                    <h3 className="text-lg font-bold text-gray-800">Lesson Metadata</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Lesson Title</label>
@@ -289,6 +314,10 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
 
             {/* Interactive Tier Stack - Controlled Inputs */}
             <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                    <div className="w-1 h-6 bg-music-green rounded-full"></div>
+                    <h3 className="text-lg font-bold text-gray-800">Tier Structure</h3>
+                </div>
                 <TierBlockEditor
                     tierNumber={1}
                     data={state.tier_content.tier1}
