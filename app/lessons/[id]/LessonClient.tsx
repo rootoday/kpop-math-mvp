@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Lesson, UserProgress, User, TierContent } from '@/types'
+import type { FullLesson, UserProgress, User } from '@/types'
 import confetti from 'canvas-confetti'
 
 interface LessonClientProps {
-    lesson: Lesson
+    lesson: FullLesson
     initialProgress: UserProgress | null
     user: User
 }
@@ -21,7 +21,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
     const [showFeedback, setShowFeedback] = useState(false)
     const [isCorrect, setIsCorrect] = useState(false)
 
-    const tierContent = lesson.tier_content as unknown as TierContent
+    const tierContent = lesson.tier_content
 
     const handleNext = async () => {
         if (currentTier < 5) {

@@ -235,8 +235,29 @@ export interface TierContent {
 // Extended Type for usage in App (overrides JSON type with strict interface)
 export type LessonRow = Database['public']['Tables']['lessons']['Row']
 
+/**
+ * Complete lesson structure with strongly-typed tier content.
+ *
+ * Maps to the `lessons` table with `tier_content` JSONB overridden
+ * from `any` to the strict `TierContent` interface.
+ *
+ * Fields:
+ * - `id` — UUID primary key
+ * - `title` — Lesson title (e.g. "Combining Like Terms with NewJeans")
+ * - `artist` — K-pop artist name (e.g. "NewJeans")
+ * - `math_concept` — Math topic covered (e.g. "Algebra")
+ * - `difficulty` — 'beginner' | 'intermediate' | 'advanced'
+ * - `is_published` — Whether the lesson is visible to students
+ * - `tier_content` — Structured content for all 5 tiers (Tier1~Tier5)
+ * - `created_at` / `updated_at` — Timestamps
+ */
 export interface FullLesson extends Omit<LessonRow, 'tier_content'> {
     tier_content: TierContent
+}
+
+/** Check if a lesson is in draft state (isDraft = !is_published) */
+export function isLessonDraft(lesson: FullLesson): boolean {
+    return !lesson.is_published
 }
 
 // Union type for problem-solving tiers

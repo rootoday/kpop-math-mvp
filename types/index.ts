@@ -1,4 +1,5 @@
-export type { Database, Json, TierContent, Tier1Content, Tier2Content, Tier3Content, Tier4Content, Tier5Content } from './database.types'
+export type { Database, Json, TierContent, Tier1Content, Tier2Content, Tier3Content, Tier4Content, Tier5Content, FullLesson, BaseTier, TierLevel, LessonRow, LessonProblem, LessonProgress } from './database.types'
+export { isLessonDraft } from './database.types'
 import type { Database } from './database.types'
 
 // Type aliases for easier usage
