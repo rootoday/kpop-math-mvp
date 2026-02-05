@@ -141,6 +141,25 @@ export interface Database {
                 }
                 Relationships: any[]
             }
+            lesson_progress: {
+                Row: LessonProgress
+                Insert: Omit<LessonProgress, 'id' | 'created_at' | 'updated_at'>
+                Update: Partial<Omit<LessonProgress, 'id' | 'created_at' | 'updated_at'>>
+                Relationships: [
+                    {
+                        foreignKeyName: "lesson_progress_lesson_id_fkey"
+                        columns: ["lesson_id"]
+                        referencedRelation: "lessons"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "lesson_progress_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
         }
         Views: {
             [_ in never]: never
@@ -211,4 +230,25 @@ export interface TierContent {
     tier3: Tier3Content;
     tier4: Tier4Content;
     tier5: Tier5Content;
+}
+
+// Extended Type for usage in App (overrides JSON type with strict interface)
+export type LessonRow = Database['public']['Tables']['lessons']['Row']
+
+export interface FullLesson extends Omit<LessonRow, 'tier_content'> {
+    tier_content: TierContent
+}
+
+// Union type for problem-solving tiers
+export type LessonProblem = Tier3Content | Tier4Content
+
+export type LessonProgress = {
+    id: string
+    user_id: string
+    lesson_id: string
+    current_tier: 1 | 2 | 3 | 4 | 5
+    completed_tiers: number[]
+    last_accessed_at: string
+    created_at: string
+    updated_at: string
 }
