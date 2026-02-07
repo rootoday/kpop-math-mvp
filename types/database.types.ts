@@ -57,6 +57,7 @@ export interface Database {
                     current_streak: number
                     last_login_date: string | null
                     role: string
+                    is_beta_tester: boolean
                     created_at: string
                     updated_at: string
                 }
@@ -71,6 +72,7 @@ export interface Database {
                     current_streak?: number
                     last_login_date?: string | null
                     role?: string
+                    is_beta_tester?: boolean
                     created_at?: string
                     updated_at?: string
                 }
@@ -85,6 +87,7 @@ export interface Database {
                     current_streak?: number
                     last_login_date?: string | null
                     role?: string
+                    is_beta_tester?: boolean
                     created_at?: string
                     updated_at?: string
                 }
