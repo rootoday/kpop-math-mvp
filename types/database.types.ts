@@ -6,18 +6,6 @@ export type Json =
     | { [key: string]: Json | undefined }
     | Json[]
 
-// Define LessonProgress before Database interface for forward reference
-export type LessonProgress = {
-    id: string
-    user_id: string
-    lesson_id: string
-    current_tier: 1 | 2 | 3 | 4 | 5
-    completed_tiers: number[]
-    last_accessed_at: string
-    created_at: string
-    updated_at: string
-}
-
 export interface Database {
     public: {
         Tables: {
@@ -70,7 +58,6 @@ export interface Database {
                     last_login_date: string | null
                     role: string
                     is_beta_tester: boolean
-                    beta_enrolled_at: string | null
                     created_at: string
                     updated_at: string
                 }
@@ -86,7 +73,6 @@ export interface Database {
                     last_login_date?: string | null
                     role?: string
                     is_beta_tester?: boolean
-                    beta_enrolled_at?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -102,7 +88,6 @@ export interface Database {
                     last_login_date?: string | null
                     role?: string
                     is_beta_tester?: boolean
-                    beta_enrolled_at?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -280,3 +265,14 @@ export function isLessonDraft(lesson: FullLesson): boolean {
 
 // Union type for problem-solving tiers
 export type LessonProblem = Tier3Content | Tier4Content
+
+export type LessonProgress = {
+    id: string
+    user_id: string
+    lesson_id: string
+    current_tier: 1 | 2 | 3 | 4 | 5
+    completed_tiers: number[]
+    last_accessed_at: string
+    created_at: string
+    updated_at: string
+}

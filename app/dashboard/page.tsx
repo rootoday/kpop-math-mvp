@@ -32,7 +32,6 @@ export default async function DashboardPage() {
         completed_lessons: [],
         role: 'user',
         is_beta_tester: false,
-        beta_enrolled_at: null,
         last_login_date: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
