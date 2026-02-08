@@ -1,5 +1,5 @@
 import { getLesson } from '../../actions'
-import LessonForm from '../../new/LessonForm'
+import LessonEditClient from './LessonEditClient'
 import { redirect } from 'next/navigation'
 
 interface EditLessonPageProps {
@@ -24,7 +24,7 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-8 border border-kpop-purple/10">
-                <LessonForm
+                <LessonEditClient
                     lessonId={id}
                     initialData={{
                         title: lesson.title,

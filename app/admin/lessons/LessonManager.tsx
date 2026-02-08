@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { getLesson } from './actions'
 import LessonForm from './new/LessonForm'
+import AIQuestionGeneratorModal from './AIQuestionGeneratorModal'
 import type { Database } from '@/types/database.types'
+import type { AIQuestion } from '@/types/ai'
 
 type Lesson = Database['public']['Tables']['lessons']['Row']
 
@@ -16,6 +18,10 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     const [editorData, setEditorData] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false)
+    const [lastAIQuestion, setLastAIQuestion] = useState<AIQuestion | null>(null)
+    const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+    const [isSavingAI, setIsSavingAI] = useState(false)
 
     const filteredLessons = initialLessons.filter(lesson =>
         lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,9 +55,18 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                 <div className="p-4 border-b">
                     <button
                         onClick={handleCreateNew}
-                        className="w-full btn-primary mb-4"
+                        className="w-full btn-primary mb-2"
                     >
                         + Create New Lesson
+                    </button>
+                    <button
+                        onClick={() => setIsAIModalOpen(true)}
+                        className="w-full mb-4 py-2 px-4 bg-gradient-to-r from-kpop-purple to-kpop-red text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        AI Question Generator
                     </button>
                     <input
                         type="text"
@@ -141,6 +156,32 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                             )}
                         </div>
 
+                        {/* AI-generated question banner */}
+                        {lastAIQuestion && (
+                            <div className="mb-6 bg-kpop-purple/5 border border-kpop-purple/20 rounded-xl p-4 animate-fade-in">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-bold text-kpop-purple uppercase flex items-center gap-1.5">
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        AI-Generated Question Added
+                                    </span>
+                                    <button
+                                        onClick={() => setLastAIQuestion(null)}
+                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-700">{lastAIQuestion.question}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Answer: <span className="font-medium text-green-700">{lastAIQuestion.correctAnswer}</span>
+                                </p>
+                            </div>
+                        )}
+
                         {/* Key forces re-mount when selection changes to reset form state */}
                         <LessonForm
                             key={selectedLessonId || 'new'}
@@ -157,6 +198,78 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                     </>
                 )}
             </div>
+
+            {/* AI Question Generator Modal */}
+            <AIQuestionGeneratorModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                onAddToLesson={async (question) => {
+                    setIsAIModalOpen(false)
+
+                    if (!selectedLessonId) {
+                        // No lesson selected — just show the preview banner
+                        setLastAIQuestion(question)
+                        setToast({ type: 'success', message: 'Question generated! Select a lesson to save it.' })
+                        setTimeout(() => setToast(null), 4000)
+                        return
+                    }
+
+                    // PATCH the question into the selected lesson
+                    setIsSavingAI(true)
+                    try {
+                        const res = await fetch(`/api/lessons/${selectedLessonId}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ question }),
+                        })
+                        const data = await res.json()
+
+                        if (!res.ok || !data.success) {
+                            setToast({ type: 'error', message: data.error ?? 'Failed to add question' })
+                        } else {
+                            setLastAIQuestion(question)
+                            setToast({ type: 'success', message: `Question added to lesson! (${data.data.questionsCount} total)` })
+                        }
+                    } catch (err) {
+                        setToast({ type: 'error', message: err instanceof Error ? err.message : 'Network error' })
+                    } finally {
+                        setIsSavingAI(false)
+                        setTimeout(() => setToast(null), 4000)
+                    }
+                }}
+            />
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed bottom-6 right-6 z-[60] animate-fade-in">
+                    <div
+                        className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${
+                            toast.type === 'success'
+                                ? 'bg-green-50 border-green-200 text-green-800'
+                                : 'bg-red-50 border-red-200 text-red-800'
+                        }`}
+                    >
+                        {toast.type === 'success' ? (
+                            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        ) : (
+                            <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        )}
+                        <span className="text-sm font-medium">{toast.message}</span>
+                        <button
+                            onClick={() => setToast(null)}
+                            className="ml-2 text-gray-400 hover:text-gray-600"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

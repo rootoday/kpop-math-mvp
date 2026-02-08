@@ -6,7 +6,13 @@
       "Bash(npm install)",
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(npm run build:*)",
-      "Bash(npm ci:*)"
+      "Bash(npm ci:*)",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__list_allowed_directories",
+      "mcp__filesystem__directory_tree",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(ls:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import type { Lesson, UserProgress, User } from '@/types'
 import { getSupabaseClient } from '@/lib/supabase/client'
+import AIQuickGenerate from './AIQuickGenerate'
 
 interface DashboardClientProps {
     lessons: Lesson[]
@@ -64,6 +65,11 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
                             <div className="text-gray-600 text-sm mt-1">Badges</div>
                         </div>
                     </div>
+                </div>
+
+                {/* AI Practice Card */}
+                <div className="mb-8 max-w-md">
+                    <AIQuickGenerate lessons={lessons} progress={progress} />
                 </div>
 
                 {/* Lessons Grid */}
