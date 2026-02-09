@@ -74,9 +74,12 @@ K-pop 아이돌을 주제로 한 대수학(다항식) 교육 플랫폼
    - Output: 5-tier script from Claude API
 
 ## 색상 팔레트
-- Primary: #9B59B6 (K-pop Purple)
-- Secondary: #E60031 (K-pop Red)
-- Accent: #1DB954 (Music Green)
+- Primary: #8B5CF6 (K-pop Purple)
+- Secondary: #EC4899 (K-pop Pink)
+- Action: #E60031 (K-pop Red)
+- Success: #10B981 (K-pop Green)
+- Accent: #3B82F6 (K-pop Blue)
+- Warning: #F59E0B (K-pop Yellow)
 - Background: #F5F5F5
 - Text: #1A1A1A
 

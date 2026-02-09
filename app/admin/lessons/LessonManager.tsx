@@ -51,7 +51,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     return (
         <div className="flex h-[calc(100vh-100px)] gap-6">
             {/* LEFT PANE: Lesson List */}
-            <div className="w-1/3 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+            <div className="w-1/3 bg-white rounded-xl shadow-kpop border border-gray-100 flex flex-col overflow-hidden">
                 <div className="p-4 border-b">
                     <button
                         onClick={handleCreateNew}
@@ -61,7 +61,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                     </button>
                     <button
                         onClick={() => setIsAIModalOpen(true)}
-                        className="w-full mb-4 py-2 px-4 bg-gradient-to-r from-kpop-purple to-kpop-red text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm"
+                        className="w-full mb-4 py-2 px-4 bg-gradient-to-r from-kpop-purple to-kpop-red text-white font-bold rounded-xl hover:opacity-90 hover:shadow-kpop transition-all duration-200 flex items-center justify-center gap-2 text-sm"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -73,7 +73,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                         placeholder="Search lessons..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-kpop-purple/20 transition-all text-sm"
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-kpop-purple/40 focus:border-kpop-purple focus:shadow-[0_0_12px_rgba(139,92,246,0.15)] transition-all text-sm"
                     />
                 </div>
 
@@ -139,7 +139,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
             </div>
 
             {/* RIGHT PANE: Editor Form */}
-            <div className="w-2/3 h-full overflow-y-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div className="w-2/3 h-full overflow-y-auto bg-white rounded-xl shadow-kpop border border-gray-100 p-8">
                 {isLoading ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400">
                         <div className="w-8 h-8 border-4 border-kpop-purple/30 border-t-kpop-purple rounded-full animate-spin mb-4"></div>
@@ -243,7 +243,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
             {toast && (
                 <div className="fixed bottom-6 right-6 z-[60] animate-fade-in">
                     <div
-                        className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${
+                        className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-kpop border ${
                             toast.type === 'success'
                                 ? 'bg-green-50 border-green-200 text-green-800'
                                 : 'bg-red-50 border-red-200 text-red-800'

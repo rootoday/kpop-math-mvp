@@ -49,6 +49,36 @@ export interface LoginFormData {
     password: string
 }
 
+// Dashboard chart data
+export interface LessonProgressChartData {
+    lessonTitle: string
+    artist: string
+    currentTier: number
+    progressPercent: number
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+    status: 'not_started' | 'in_progress' | 'completed'
+}
+
+// Dashboard recent activity
+export interface RecentActivityItem {
+    lessonId: string
+    lessonTitle: string
+    artist: string
+    score: number
+    xpEarned: number
+    action: 'started' | 'continued' | 'completed'
+    timestamp: string
+    currentTier: number
+}
+
+// Dashboard recommended lesson
+export interface RecommendedLesson {
+    lesson: Lesson
+    reason: string
+    priority: number
+    progress?: UserProgress
+}
+
 // API Response types
 export interface ApiResponse<T> {
     data?: T
@@ -65,4 +95,36 @@ export interface ProgressResponse {
 
 export interface UserResponse {
     user: User
+}
+
+// Analytics types
+export interface AccuracyTrendPoint {
+    date: string
+    dateLabel: string
+    accuracy: number
+    sessionCount: number
+}
+
+export interface TopicAnalysisData {
+    mathConcept: string
+    shortLabel: string
+    averageScore: number
+    attempts: number
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+}
+
+export interface HeatmapCell {
+    dayOfWeek: number
+    timeBlock: number
+    totalMinutes: number
+    sessionCount: number
+    intensity: number
+}
+
+export interface TopicInsight {
+    mathConcept: string
+    averageScore: number
+    attempts: number
+    trend: 'improving' | 'declining' | 'stable'
+    suggestion: string
 }

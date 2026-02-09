@@ -1,9 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { FullLesson, UserProgress, User } from '@/types'
 import confetti from 'canvas-confetti'
+import TierTransition from '@/components/animations/TierTransition'
+import FadeIn from '@/components/animations/FadeIn'
+import StaggerContainer, { staggerItemVariants } from '@/components/animations/StaggerContainer'
+import QuestionCard from '@/components/ui/QuestionCard'
+import AnimatedButton from '@/components/ui/AnimatedButton'
+import CelebrationOverlay from '@/components/ui/CelebrationOverlay'
+import { motion } from 'framer-motion'
 
 interface LessonClientProps {
     lesson: FullLesson
@@ -20,15 +27,22 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
     const [textAnswer, setTextAnswer] = useState('')
     const [showFeedback, setShowFeedback] = useState(false)
     const [isCorrect, setIsCorrect] = useState(false)
+    const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward')
 
     const tierContent = lesson.tier_content
 
+    const resetAnswerState = useCallback(() => {
+        setSelectedAnswer(null)
+        setTextAnswer('')
+        setShowFeedback(false)
+        setIsCorrect(false)
+    }, [])
+
     const handleNext = async () => {
         if (currentTier < 5) {
+            setTransitionDirection('forward')
             setCurrentTier(currentTier + 1)
-            setShowFeedback(false)
-            setSelectedAnswer(null)
-            setTextAnswer('')
+            resetAnswerState()
         } else {
             // Lesson completed
             await updateProgress('completed')
@@ -38,10 +52,9 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
 
     const handlePrevious = () => {
         if (currentTier > 1) {
+            setTransitionDirection('backward')
             setCurrentTier(currentTier - 1)
-            setShowFeedback(false)
-            setSelectedAnswer(null)
-            setTextAnswer('')
+            resetAnswerState()
         }
     }
 
@@ -92,18 +105,11 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
         }
     }
 
-    const triggerConfetti = () => {
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        })
-    }
-
     useEffect(() => {
         if (currentTier === 5) {
-            triggerConfetti()
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTier])
 
     return (
@@ -128,167 +134,117 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
             </header>
 
             <div className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Tier 1: Hook */}
-                {currentTier === 1 && (
-                    <div className="card animate-fade-in">
-                        <h2 className="text-3xl font-bold mb-4">{tierContent.tier1.title}</h2>
-                        <p className="text-lg text-gray-700 mb-6">{tierContent.tier1.text}</p>
-                        <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center mb-6">
-                            <span className="text-gray-500">🎵 {lesson.artist} Image</span>
-                        </div>
-                        <button onClick={handleNext} className="btn-primary w-full">
-                            Let&apos;s Learn! &rarr;
-                        </button>
-                    </div>
-                )}
-
-                {/* Tier 2: Concept */}
-                {currentTier === 2 && (
-                    <div className="card animate-fade-in">
-                        <h2 className="text-3xl font-bold mb-6">{tierContent.tier2.title}</h2>
-                        <div className="space-y-6">
-                            {tierContent.tier2.steps.map((step: any, index: number) => (
-                                <div
-                                    key={index}
-                                    className="p-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg animate-slide-up"
-                                    style={{ animationDelay: `${index * 0.2}s` }}
-                                >
-                                    <div className="text-sm font-semibold text-kpop-purple mb-2">
-                                        Step {step.stepNumber}
-                                    </div>
-                                    <p className="text-lg">{step.text}</p>
+                <TierTransition tierKey={currentTier} direction={transitionDirection}>
+                    {/* Tier 1: Hook */}
+                    {currentTier === 1 && (
+                        <FadeIn>
+                            <div className="card">
+                                <h2 className="text-3xl font-bold mb-4">{tierContent.tier1.title}</h2>
+                                <p className="text-lg text-gray-700 mb-6">{tierContent.tier1.text}</p>
+                                <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center mb-6">
+                                    <span className="text-gray-500">🎵 {lesson.artist} Image</span>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="flex gap-4 mt-6">
-                            <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                &larr; Previous
-                            </button>
-                            <button onClick={handleNext} className="btn-primary flex-1">
-                                Next &rarr;
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Tier 3: Multiple Choice */}
-                {currentTier === 3 && (
-                    <div className="card animate-fade-in">
-                        <h2 className="text-2xl font-bold mb-6">Practice Time! 🎯</h2>
-                        <p className="text-lg mb-6">{tierContent.tier3.questionText}</p>
-                        <div className="space-y-3 mb-6">
-                            {tierContent.tier3.options.map((option: any) => (
-                                <button
-                                    key={option.id}
-                                    onClick={() => setSelectedAnswer(option.id)}
-                                    className={`w-full p-4 text-left rounded-lg border-2 transition-all ${selectedAnswer === option.id
-                                        ? 'border-kpop-purple bg-purple-50'
-                                        : 'border-gray-300 hover:border-gray-400'
-                                        }`}
-                                >
-                                    {option.text}
-                                </button>
-                            ))}
-                        </div>
-
-                        {showFeedback && (
-                            <div
-                                className={`p-4 rounded-lg mb-4 ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}
-                            >
-                                {isCorrect ? '✅ Correct! Great job!' : '❌ Not quite. Try again!'}
+                                <AnimatedButton variant="primary" fullWidth onClick={handleNext}>
+                                    Let&apos;s Learn! →
+                                </AnimatedButton>
                             </div>
-                        )}
+                        </FadeIn>
+                    )}
 
-                        <div className="flex gap-4">
-                            <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                &larr; Previous
-                            </button>
-                            {!showFeedback ? (
-                                <button
-                                    onClick={() => handleCheckAnswer(3)}
-                                    disabled={!selectedAnswer}
-                                    className="btn-primary flex-1 disabled:opacity-50"
-                                >
-                                    Check Answer
-                                </button>
-                            ) : (
-                                <button onClick={handleNext} className="btn-primary flex-1">
-                                    Next &rarr;
-                                </button>
-                            )}
+                    {/* Tier 2: Concept */}
+                    {currentTier === 2 && (
+                        <div className="card">
+                            <h2 className="text-3xl font-bold mb-6">{tierContent.tier2.title}</h2>
+                            <StaggerContainer staggerDelay={0.15} className="space-y-6 mb-6">
+                                {tierContent.tier2.steps.map((step: any, index: number) => (
+                                    <motion.div
+                                        key={index}
+                                        variants={staggerItemVariants}
+                                        className="p-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg"
+                                    >
+                                        <div className="text-sm font-semibold text-kpop-purple mb-2">
+                                            Step {step.stepNumber}
+                                        </div>
+                                        <p className="text-lg">{step.text}</p>
+                                    </motion.div>
+                                ))}
+                            </StaggerContainer>
+                            <div className="flex gap-4">
+                                <AnimatedButton variant="secondary" fullWidth onClick={handlePrevious}>
+                                    ← Previous
+                                </AnimatedButton>
+                                <AnimatedButton variant="primary" fullWidth onClick={handleNext}>
+                                    Next →
+                                </AnimatedButton>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Tier 4: Fill in Blank */}
-                {currentTier === 4 && (
-                    <div className="card animate-fade-in">
-                        <h2 className="text-2xl font-bold mb-6">Challenge! 💪</h2>
-                        <p className="text-lg mb-6">{tierContent.tier4.questionText}</p>
-                        <input
-                            type="text"
-                            value={textAnswer}
-                            onChange={(e) => setTextAnswer(e.target.value)}
-                            placeholder="Enter your answer..."
-                            className="input-field mb-6"
+                    {/* Tier 3: Multiple Choice */}
+                    {currentTier === 3 && (
+                        <QuestionCard
+                            type="multiple_choice"
+                            questionText={tierContent.tier3.questionText}
+                            options={tierContent.tier3.options}
+                            selectedAnswer={selectedAnswer}
+                            onSelectAnswer={id => !showFeedback && setSelectedAnswer(id)}
+                            showFeedback={showFeedback}
+                            isCorrect={isCorrect}
+                            xpReward={tierContent.tier3.xpReward}
+                            hint={tierContent.tier3.hint}
+                            onCheckAnswer={() => handleCheckAnswer(3)}
+                            onTryAgain={resetAnswerState}
+                            onContinue={handleNext}
+                            onPrevious={handlePrevious}
+                            canCheck={!!selectedAnswer}
                         />
+                    )}
 
-                        {showFeedback && (
-                            <div
-                                className={`p-4 rounded-lg mb-4 ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}
-                            >
-                                {isCorrect
-                                    ? '✅ Perfect! You got it!'
-                                    : `❌ Not quite. Hint: ${tierContent.tier4.hint}`}
-                            </div>
-                        )}
+                    {/* Tier 4: Fill in Blank */}
+                    {currentTier === 4 && (
+                        <QuestionCard
+                            type="fill_in_blank"
+                            questionText={tierContent.tier4.questionText}
+                            textAnswer={textAnswer}
+                            onTextChange={setTextAnswer}
+                            inputType={tierContent.tier4.inputType === 'number' ? 'number' : 'text'}
+                            onEnterSubmit={() => handleCheckAnswer(4)}
+                            showFeedback={showFeedback}
+                            isCorrect={isCorrect}
+                            xpReward={tierContent.tier4.xpReward}
+                            hint={tierContent.tier4.hint}
+                            onCheckAnswer={() => handleCheckAnswer(4)}
+                            onTryAgain={resetAnswerState}
+                            onContinue={handleNext}
+                            onPrevious={handlePrevious}
+                            canCheck={!!textAnswer}
+                        />
+                    )}
 
-                        <div className="flex gap-4">
-                            <button onClick={handlePrevious} className="btn-secondary flex-1">
-                                &larr; Previous
-                            </button>
-                            {!showFeedback ? (
-                                <button
-                                    onClick={() => handleCheckAnswer(4)}
-                                    disabled={!textAnswer}
-                                    className="btn-primary flex-1 disabled:opacity-50"
+                    {/* Tier 5: Celebration */}
+                    {currentTier === 5 && (
+                        <CelebrationOverlay
+                            congratsText={tierContent.tier5.congratsText}
+                            summaryText={tierContent.tier5.summaryText}
+                            xpBreakdown={[
+                                { label: 'Score', value: score, color: 'bg-purple-50' },
+                                { label: 'XP', value: xpEarned, color: 'bg-pink-50' },
+                            ]}
+                            totalXp={xpEarned}
+                            badgeEarned={tierContent.tier5.badgeEarned}
+                            actions={
+                                <AnimatedButton
+                                    variant="primary"
+                                    fullWidth
+                                    onClick={handleNext}
+                                    className="text-lg"
                                 >
-                                    Check Answer
-                                </button>
-                            ) : (
-                                <button onClick={handleNext} className="btn-primary flex-1">
-                                    Next &rarr;
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Tier 5: Celebration */}
-                {currentTier === 5 && (
-                    <div className="card text-center animate-fade-in">
-                        <div className="text-6xl mb-6">🎉</div>
-                        <h2 className="text-4xl font-bold mb-4">{tierContent.tier5.congratsText}</h2>
-                        <p className="text-lg text-gray-700 mb-8">{tierContent.tier5.summaryText}</p>
-
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="p-4 bg-purple-100 rounded-lg">
-                                <div className="text-3xl font-bold text-kpop-purple">{score}/100</div>
-                                <div className="text-sm text-gray-600">Score</div>
-                            </div>
-                            <div className="p-4 bg-purple-100 rounded-lg">
-                                <div className="text-3xl font-bold text-kpop-purple">+{xpEarned}</div>
-                                <div className="text-sm text-gray-600">XP Earned</div>
-                            </div>
-                        </div>
-
-                        <button onClick={handleNext} className="btn-primary w-full">
-                            Back to Dashboard
-                        </button>
-                    </div>
-                )}
+                                    Back to Dashboard
+                                </AnimatedButton>
+                            }
+                        />
+                    )}
+                </TierTransition>
             </div>
         </div>
     )

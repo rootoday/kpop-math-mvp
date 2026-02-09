@@ -28,10 +28,10 @@ export default function ProgressBar({ currentTier, completedTiers, onTierClick, 
 
     const getStepStyle = (tier: TierLevel) => {
         if (completedTiers.has(tier)) {
-            return 'bg-music-green text-white cursor-pointer hover:scale-110'
+            return 'bg-music-green text-white cursor-pointer hover:scale-110 shadow-sm'
         }
         if (tier === currentTier) {
-            return 'bg-kpop-purple text-white cursor-pointer ring-4 ring-purple-200 animate-pulse'
+            return 'bg-kpop-purple text-white cursor-pointer shadow-neon'
         }
         if (canNavigate(tier)) {
             return 'bg-purple-200 text-kpop-purple cursor-pointer hover:bg-purple-300'
@@ -41,7 +41,7 @@ export default function ProgressBar({ currentTier, completedTiers, onTierClick, 
 
     const getLineStyle = (tier: TierLevel) => {
         if (completedTiers.has(tier)) {
-            return 'bg-music-green'
+            return 'gradient-primary'
         }
         return 'bg-gray-200'
     }

@@ -45,15 +45,15 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center px-4">
-            <div className="card max-w-md w-full animate-fade-in">
+        <div className="min-h-screen gradient-hero flex items-center justify-center px-4">
+            <div className="card-glass max-w-md w-full animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-gradient mb-2">Welcome Back!</h1>
+                    <h1 className="text-4xl font-heading text-gradient mb-2">Welcome Back!</h1>
                     <p className="text-gray-600">Login to continue your learning</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
                         {error}
                     </div>
                 )}
@@ -103,14 +103,14 @@ export default function LoginPage() {
                 <div className="mt-6 text-center">
                     <p className="text-gray-600">
                         Don&apos;t have an account?{' '}
-                        <Link href="/signup" className="text-kpop-purple font-semibold hover:underline">
+                        <Link href="/signup" className="text-kpop-purple font-semibold link-hover">
                             Sign Up
                         </Link>
                     </p>
                 </div>
 
                 <div className="mt-4 text-center">
-                    <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+                    <Link href="/" className="text-sm text-gray-500 hover:text-kpop-purple transition-colors">
                         ← Back to Home
                     </Link>
                 </div>

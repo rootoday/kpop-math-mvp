@@ -16,10 +16,10 @@ export default async function AdminLessonsPage() {
     return (
         <div className="animate-fade-in h-[calc(100vh-100px)]">
             <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                <h2 className="text-3xl font-heading text-gradient">
                     Lesson Management
                 </h2>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-sm text-gray-500 font-medium bg-kpop-purple/5 px-3 py-1.5 rounded-full">
                     {(lessons as any[]).length} Total Lessons
                 </div>
             </div>

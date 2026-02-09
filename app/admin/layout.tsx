@@ -23,34 +23,34 @@ export default async function AdminLayout({
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <aside className="w-64 bg-kpop-purple text-white hidden md:block">
+            <aside className="w-64 gradient-hero text-white hidden md:flex md:flex-col">
                 <div className="p-6">
-                    <h1 className="text-2xl font-bold">Admin Panel</h1>
+                    <h1 className="text-2xl font-heading">Admin Panel</h1>
+                    <p className="text-white/60 text-xs mt-1">K-POP Math Management</p>
                 </div>
-                <nav className="mt-6">
-                    <Link href="/admin" className="block px-6 py-3 hover:bg-white/10 transition-colors">
+                <nav className="mt-4 flex-1 px-3 space-y-1">
+                    <Link href="/admin" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
                         Dashboard
                     </Link>
-                    <Link href="/admin/lessons" className="block px-6 py-3 hover:bg-white/10 transition-colors">
+                    <Link href="/admin/lessons" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
                         Manage Lessons
                     </Link>
-                    <Link href="/admin/users" className="block px-6 py-3 hover:bg-white/10 transition-colors">
+                    <Link href="/admin/users" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
                         Manage Users
                     </Link>
-                    <div className="mt-auto pt-6 border-t border-white/20">
-                        <Link href="/dashboard" className="block px-6 py-3 hover:bg-white/10 transition-colors">
-                            Back to App
-                        </Link>
-                    </div>
                 </nav>
+                <div className="p-3 border-t border-white/20">
+                    <Link href="/dashboard" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium opacity-80">
+                        ← Back to App
+                    </Link>
+                </div>
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
                 {/* Mobile Header */}
-                <header className="md:hidden bg-kpop-purple text-white p-4 flex justify-between items-center">
-                    <h1 className="text-lg font-bold">Admin Panel</h1>
-                    {/* Add hamburger menu here if needed */}
+                <header className="md:hidden gradient-hero text-white p-4 flex justify-between items-center">
+                    <h1 className="text-lg font-heading">Admin Panel</h1>
                 </header>
 
                 <div className="p-8">
