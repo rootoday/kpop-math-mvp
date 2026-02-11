@@ -13,7 +13,7 @@ const TOPICS = [
     { value: 'statistics', label: 'Statistics' },
 ]
 
-const ARTISTS = [
+const DEFAULT_ARTISTS = [
     { value: 'NewJeans', label: 'NewJeans' },
     { value: 'BTS', label: 'BTS' },
     { value: 'BLACKPINK', label: 'BLACKPINK' },
@@ -39,7 +39,9 @@ export default function AIQuestionGeneratorModal({
 }: AIQuestionGeneratorModalProps) {
     const [topic, setTopic] = useState(TOPICS[0].value)
     const [difficulty, setDifficulty] = useState(3)
-    const [artistName, setArtistName] = useState(ARTISTS[0].value)
+    const [artists, setArtists] = useState(DEFAULT_ARTISTS)
+    const [artistName, setArtistName] = useState(DEFAULT_ARTISTS[0].value)
+    const [newArtist, setNewArtist] = useState('')
     const { loading, error, data: result, generateQuestion, reset } = useAIQuestionGenerator()
 
     if (!isOpen) return null
@@ -141,10 +143,46 @@ export default function AIQuestionGeneratorModal({
                             className="input-field w-full"
                             disabled={loading}
                         >
-                            {ARTISTS.map((a) => (
+                            {artists.map((a) => (
                                 <option key={a.value} value={a.value}>{a.label}</option>
                             ))}
                         </select>
+                        <div className="flex gap-2 mt-2">
+                            <input
+                                type="text"
+                                value={newArtist}
+                                onChange={(e) => setNewArtist(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault()
+                                        const trimmed = newArtist.trim()
+                                        if (trimmed && !artists.some(a => a.value.toLowerCase() === trimmed.toLowerCase())) {
+                                            setArtists(prev => [...prev, { value: trimmed, label: trimmed }])
+                                            setArtistName(trimmed)
+                                            setNewArtist('')
+                                        }
+                                    }
+                                }}
+                                placeholder="Add new artist..."
+                                disabled={loading}
+                                className="flex-1 px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-kpop-purple/20 transition-all"
+                            />
+                            <button
+                                type="button"
+                                disabled={loading || !newArtist.trim()}
+                                onClick={() => {
+                                    const trimmed = newArtist.trim()
+                                    if (trimmed && !artists.some(a => a.value.toLowerCase() === trimmed.toLowerCase())) {
+                                        setArtists(prev => [...prev, { value: trimmed, label: trimmed }])
+                                        setArtistName(trimmed)
+                                        setNewArtist('')
+                                    }
+                                }}
+                                className="px-3 py-1.5 bg-kpop-purple text-white text-sm font-bold rounded-lg hover:bg-kpop-purple/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
 
                     {/* Generate Button */}
