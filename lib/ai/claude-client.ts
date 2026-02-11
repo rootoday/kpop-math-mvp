@@ -31,18 +31,18 @@ export function getClaudeClient(): Anthropic {
 
 // ─── Prompt Builder ──────────────────────────────────────────
 function buildPrompt(req: GenerateQuestionRequest): string {
-  return `You are a K-pop math tutor. Create ONE math problem.
+  return `You are a K-pop math tutor. Always respond in English. Create ONE math problem.
 
 Topic: ${req.topic}
 Difficulty: ${req.difficulty}/5
 K-pop Artist Theme: ${req.artistName}
 
-Return ONLY valid JSON (no markdown, no backticks):
+Return ONLY valid JSON in English (no markdown, no backticks):
 {
-  "question": "문제 텍스트",
+  "question": "question text here",
   "choices": ["A", "B", "C", "D"],
-  "correctAnswer": "정답",
-  "explanation": "간단한 해설"
+  "correctAnswer": "the correct answer",
+  "explanation": "brief explanation"
 }`
 }
 

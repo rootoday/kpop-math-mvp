@@ -12,7 +12,9 @@
       "mcp__filesystem__directory_tree",
       "Bash(node_modules/.bin/tsc:*)",
       "Bash(ls:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__search_files"
     ]
   }
 }

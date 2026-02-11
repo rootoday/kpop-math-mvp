@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getLesson } from './actions'
+import { getLesson, deleteLesson } from './actions'
 import LessonForm from './new/LessonForm'
 import AIQuestionGeneratorModal from './AIQuestionGeneratorModal'
 import type { Database } from '@/types/database.types'
@@ -22,8 +22,10 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     const [lastAIQuestion, setLastAIQuestion] = useState<AIQuestion | null>(null)
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
     const [isSavingAI, setIsSavingAI] = useState(false)
+    const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
+    const [lessons, setLessons] = useState(initialLessons)
 
-    const filteredLessons = initialLessons.filter(lesson =>
+    const filteredLessons = lessons.filter(lesson =>
         lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lesson.artist.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -46,6 +48,22 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     const handleCreateNew = () => {
         setSelectedLessonId(null)
         setEditorData(null)
+    }
+
+    const handleDeleteLesson = async (id: string) => {
+        const result = await deleteLesson(id)
+        if (result.error) {
+            setToast({ type: 'error', message: result.error })
+        } else {
+            setLessons(prev => prev.filter(l => l.id !== id))
+            if (selectedLessonId === id) {
+                setSelectedLessonId(null)
+                setEditorData(null)
+            }
+            setToast({ type: 'success', message: 'Lesson deleted successfully' })
+        }
+        setDeletingLessonId(null)
+        setTimeout(() => setToast(null), 4000)
     }
 
     return (
@@ -81,36 +99,74 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
                     {filteredLessons.map((lesson) => (
                         <div
                             key={lesson.id}
-                            onClick={() => handleSelectLesson(lesson.id)}
-                            className={`p-4 rounded-xl cursor-pointer transition-all border ${selectedLessonId === lesson.id
+                            className={`p-4 rounded-xl transition-all border ${selectedLessonId === lesson.id
                                 ? 'bg-kpop-purple/5 border-kpop-purple shadow-sm'
                                 : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200'
                                 }`}
                         >
-                            <div className="flex justify-between items-start mb-1">
-                                <h4 className={`font-bold text-sm ${selectedLessonId === lesson.id ? 'text-kpop-purple' : 'text-gray-800'}`}>
-                                    {lesson.title}
-                                </h4>
-                                {lesson.is_published ? (
-                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold">
-                                        LIVE
-                                    </span>
-                                ) : (
-                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full font-bold">
-                                        DRAFT
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <span>{lesson.artist}</span>
-                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                <span className={`capitalize ${lesson.difficulty === 'beginner' ? 'text-green-600' :
-                                    lesson.difficulty === 'intermediate' ? 'text-yellow-600' :
-                                        'text-red-600'
-                                    }`}>
-                                    {lesson.difficulty}
-                                </span>
-                            </div>
+                            {deletingLessonId === lesson.id ? (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-red-600 font-medium">Delete this lesson?</span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleDeleteLesson(lesson.id)}
+                                            className="px-3 py-1 text-xs font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+                                        >
+                                            Yes
+                                        </button>
+                                        <button
+                                            onClick={() => setDeletingLessonId(null)}
+                                            className="px-3 py-1 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                        >
+                                            No
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div
+                                    onClick={() => handleSelectLesson(lesson.id)}
+                                    className="cursor-pointer"
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h4 className={`font-bold text-sm ${selectedLessonId === lesson.id ? 'text-kpop-purple' : 'text-gray-800'}`}>
+                                            {lesson.title}
+                                        </h4>
+                                        <div className="flex items-center gap-1.5">
+                                            {lesson.is_published ? (
+                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold">
+                                                    LIVE
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full font-bold">
+                                                    DRAFT
+                                                </span>
+                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setDeletingLessonId(lesson.id)
+                                                }}
+                                                className="p-1 text-gray-300 hover:text-red-500 transition-colors rounded-md hover:bg-red-50"
+                                                title="Delete lesson"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <span>{lesson.artist}</span>
+                                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                        <span className={`capitalize ${lesson.difficulty === 'beginner' ? 'text-green-600' :
+                                            lesson.difficulty === 'intermediate' ? 'text-yellow-600' :
+                                                'text-red-600'
+                                            }`}>
+                                            {lesson.difficulty}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
 
