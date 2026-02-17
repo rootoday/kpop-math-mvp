@@ -39,6 +39,7 @@ export async function createLesson(formData: FormData) {
         })
 
     if (error) {
+        console.error('Error creating lesson:', error)
         return { error: error.message }
     }
 
@@ -81,6 +82,7 @@ export async function updateLesson(id: string, formData: FormData) {
         .eq('id', id)
 
     if (error) {
+        console.error('Error updating lesson:', error)
         return { error: error.message }
     }
 
