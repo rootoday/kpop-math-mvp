@@ -109,7 +109,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
         if (currentTier === 5) {
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTier])
 
     return (
@@ -141,9 +141,34 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                             <div className="card">
                                 <h2 className="text-3xl font-bold mb-4">{tierContent.tier1.title}</h2>
                                 <p className="text-lg text-gray-700 mb-6">{tierContent.tier1.text}</p>
-                                <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center mb-6">
-                                    <span className="text-gray-500">🎵 {lesson.artist} Image</span>
+
+                                <div className="rounded-lg overflow-hidden mb-6 bg-gray-100 shadow-inner">
+                                    {(tierContent.tier1.mediaType === 'youtube' && tierContent.tier1.imageUrl) ? (
+                                        <div className="relative pt-[56.25%]">
+                                            <iframe
+                                                src={`https://www.youtube.com/embed/${(() => {
+                                                    const match = tierContent.tier1.imageUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)
+                                                    return (match && match[2].length === 11) ? match[2] : ''
+                                                })()}`}
+                                                className="absolute top-0 left-0 w-full h-full"
+                                                title="Lesson Video"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    ) : tierContent.tier1.imageUrl ? (
+                                        <img
+                                            src={tierContent.tier1.imageUrl}
+                                            alt={tierContent.tier1.title}
+                                            className="w-full h-auto object-cover max-h-96"
+                                        />
+                                    ) : (
+                                        <div className="h-64 flex items-center justify-center bg-gray-200">
+                                            <span className="text-gray-500">Video or Image not available</span>
+                                        </div>
+                                    )}
                                 </div>
+
                                 <AnimatedButton variant="primary" fullWidth onClick={handleNext}>
                                     Let&apos;s Learn! →
                                 </AnimatedButton>

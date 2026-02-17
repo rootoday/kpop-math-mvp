@@ -13,6 +13,19 @@ export function Tier1Editor({ data, onChange }: Tier1EditorProps) {
         onChange({ ...data, [e.target.name]: e.target.value })
     }
 
+    const getYouTubeId = (url: string) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+        const match = url.match(regExp)
+        return (match && match[2].length === 11) ? match[2] : null
+    }
+
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        // If YouTube mode is selected and full URL pasted, extract ID optionally or just keep URL
+        // For simplicity, we just save the URL. The client will handle parsing.
+        onChange({ ...data, imageUrl: value })
+    }
+
     return (
         <div className="space-y-4 animate-fade-in">
             <h3 className="text-lg font-semibold text-kpop-purple border-b pb-2">Tier 1: Lesson Introduction</h3>
@@ -38,15 +51,34 @@ export function Tier1Editor({ data, onChange }: Tier1EditorProps) {
                         placeholder="Explain what the student will learn..."
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                    <input
-                        name="imageUrl"
-                        value={data.imageUrl}
-                        onChange={handleChange}
-                        className="input-field mt-1"
-                        placeholder="https://..."
-                    />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Media Type</label>
+                        <select
+                            value={data.mediaType || 'image'}
+                            onChange={(e) => onChange({ ...data, mediaType: e.target.value as 'image' | 'youtube' })}
+                            className="input-field mt-1"
+                        >
+                            <option value="image">Image</option>
+                            <option value="youtube">YouTube Video</option>
+                        </select>
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            {data.mediaType === 'youtube' ? 'YouTube URL' : 'Image URL'}
+                        </label>
+                        <input
+                            name="imageUrl"
+                            value={data.imageUrl}
+                            onChange={handleUrlChange}
+                            className="input-field mt-1"
+                            placeholder={data.mediaType === 'youtube' ? 'e.g. https://youtu.be/...' : 'e.g. https://...'}
+                        />
+                        {data.mediaType === 'youtube' && data.imageUrl && !getYouTubeId(data.imageUrl) && (
+                            <p className="text-xs text-yellow-600 mt-1">Warning: Could not detect valid YouTube ID</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

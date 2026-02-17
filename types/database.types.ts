@@ -190,7 +190,8 @@ export interface BaseTier {
 // Specific content structures for each tier
 export interface Tier1Content extends BaseTier {
     text: string;
-    imageUrl: string;
+    imageUrl: string; // Generic URL for both Image and YouTube
+    mediaType?: 'image' | 'youtube'; // Defaults to 'image' if undefined
     duration: number; // Kept for backward compatibility, sync with estimatedMinutes
 }
 
