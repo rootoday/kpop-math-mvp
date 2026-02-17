@@ -31,6 +31,28 @@ export async function PATCH(
 ) {
     const supabase = createRouteHandlerClient<Database>({ cookies })
 
+    // Security: Only admins can modify lesson content
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return NextResponse.json(
+            { success: false, error: 'Unauthorized' },
+            { status: 401 }
+        )
+    }
+
+    const { data: userData } = await (supabase as any)
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!userData || userData.role !== 'admin') {
+        return NextResponse.json(
+            { success: false, error: 'Forbidden: admin access required' },
+            { status: 403 }
+        )
+    }
+
     let body: { question: AIQuestion }
     try {
         body = await request.json()

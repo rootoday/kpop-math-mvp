@@ -18,7 +18,7 @@ export async function GET() {
         .single()
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
     }
 
     return NextResponse.json({ user: data })
@@ -34,16 +34,27 @@ export async function PATCH(request: Request) {
 
     const body = await request.json()
 
+    // Security: Only allow safe fields to be updated by the user
+    const allowedFields = ['first_name', 'last_name'] as const
+    const sanitized: Record<string, unknown> = {}
+    for (const key of allowedFields) {
+        if (key in body) sanitized[key] = body[key]
+    }
+
+    if (Object.keys(sanitized).length === 0) {
+        return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
     const { data, error } = await supabase
         .from('users')
         // @ts-ignore - Bypassing strict type check for CI pass
-        .update(body as any)
+        .update(sanitized as any)
         .eq('id', user.id)
         .select()
         .single()
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
     }
 
     return NextResponse.json({ user: data })

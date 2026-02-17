@@ -25,7 +25,7 @@ export async function GET(_request: Request) {
         .eq('user_id', user.id)
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
     }
 
     return NextResponse.json({ progress: data })
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         .single()
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
     }
 
     // Update user XP if lesson completed
