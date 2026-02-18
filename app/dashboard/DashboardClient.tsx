@@ -118,22 +118,7 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
                 {/* 1. Statistics Cards */}
                 <StatCards {...stats} />
 
-                {/* 2. Progress Chart + Recent Activity */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div className="lg:col-span-2">
-                        <ProgressChart data={chartData} />
-                    </div>
-                    <div className="lg:col-span-1">
-                        <RecentActivity items={recentActivity} onLessonClick={handleLessonClick} />
-                    </div>
-                </div>
-
-                {/* 3. AI Quick Practice */}
-                <div className="mb-8 max-w-md">
-                    <AIQuickGenerate lessons={lessons} progress={progress} />
-                </div>
-
-                {/* 4. Recommended Lessons */}
+                {/* 2. Recommended Lessons */}
                 {recommendations.length > 0 && (
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
@@ -148,6 +133,21 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
                         />
                     </div>
                 )}
+
+                {/* 3. Progress Chart + Recent Activity */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="lg:col-span-2">
+                        <ProgressChart data={chartData} />
+                    </div>
+                    <div className="lg:col-span-1">
+                        <RecentActivity items={recentActivity} onLessonClick={handleLessonClick} />
+                    </div>
+                </div>
+
+                {/* 4. AI Quick Practice */}
+                <div className="mb-8 max-w-md">
+                    <AIQuickGenerate lessons={lessons} progress={progress} />
+                </div>
 
                 {/* 5. All Lessons Grid */}
                 <div>
