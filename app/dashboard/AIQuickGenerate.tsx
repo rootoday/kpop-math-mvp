@@ -74,7 +74,7 @@ export default function AIQuickGenerate({ lessons, progress }: AIQuickGeneratePr
 
     const handleGoToLesson = () => {
         if (currentLesson) {
-            router.push(`/lessons/${currentLesson.id}`)
+            router.push(`/learn/${currentLesson.id}`)
         }
     }
 

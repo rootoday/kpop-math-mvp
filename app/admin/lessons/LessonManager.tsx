@@ -67,9 +67,9 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     }
 
     return (
-        <div className="flex h-[calc(100vh-100px)] gap-6">
+        <div className="flex flex-col md:flex-row h-auto md:h-[calc(100vh-100px)] gap-4 md:gap-6">
             {/* LEFT PANE: Lesson List */}
-            <div className="w-1/3 bg-white rounded-xl shadow-kpop border border-gray-100 flex flex-col overflow-hidden">
+            <div className="w-full md:w-1/3 max-h-[50vh] md:max-h-none bg-white rounded-xl shadow-kpop border border-gray-100 flex flex-col overflow-hidden">
                 <div className="p-4 border-b">
                     <button
                         onClick={handleCreateNew}
@@ -195,7 +195,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
             </div>
 
             {/* RIGHT PANE: Editor Form */}
-            <div className="w-2/3 h-full overflow-y-auto bg-white rounded-xl shadow-kpop border border-gray-100 p-8">
+            <div className="w-full md:w-2/3 h-auto md:h-full overflow-y-auto bg-white rounded-xl shadow-kpop border border-gray-100 p-4 md:p-8">
                 {isLoading ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400">
                         <div className="w-8 h-8 border-4 border-kpop-purple/30 border-t-kpop-purple rounded-full animate-spin mb-4"></div>

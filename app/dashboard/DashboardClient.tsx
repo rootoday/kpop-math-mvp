@@ -48,7 +48,7 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
     }
 
     const handleLessonClick = (lessonId: string) => {
-        router.push(`/lessons/${lessonId}`)
+        router.push(`/learn/${lessonId}`)
     }
 
     // --- Computed dashboard data ---
@@ -92,14 +92,14 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
             <header className="bg-white shadow-sm">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gradient">K-POP Math</h1>
-                    <div className="flex items-center gap-4">
-                        <Link href="/lessons" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Link href="/lessons" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-xs sm:text-sm">
                             All Lessons
                         </Link>
-                        <Link href="/analytics" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
+                        <Link href="/analytics" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-xs sm:text-sm">
                             Analytics
                         </Link>
-                        <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900">
+                        <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm">
                             Logout
                         </button>
                     </div>

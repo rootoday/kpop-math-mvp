@@ -29,7 +29,7 @@ export default function LessonsPageClient({ lessons, progress, user }: LessonsPa
     }
 
     const handleLessonClick = (lessonId: string) => {
-        router.push(`/lessons/${lessonId}`)
+        router.push(`/learn/${lessonId}`)
     }
 
     const filteredLessons = filter === 'all'
@@ -49,14 +49,14 @@ export default function LessonsPageClient({ lessons, progress, user }: LessonsPa
             <header className="bg-white shadow-sm">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <Link href="/dashboard" className="text-2xl font-bold text-gradient">K-POP Math</Link>
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Link href="/dashboard" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-xs sm:text-sm">
                             Dashboard
                         </Link>
-                        <Link href="/analytics" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
+                        <Link href="/analytics" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-xs sm:text-sm">
                             Analytics
                         </Link>
-                        <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900">
+                        <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm">
                             Logout
                         </button>
                     </div>
