@@ -284,7 +284,7 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
                                         <AnimatedButton
                                             variant="secondary"
                                             fullWidth
-                                            onClick={() => router.push(`/learn/${tc.tier5.nextLessonId}`)}
+                                            onClick={() => router.push(`/lessons/${tc.tier5.nextLessonId}`)}
                                             className="text-lg"
                                         >
                                             Next Lesson →

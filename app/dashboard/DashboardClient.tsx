@@ -93,8 +93,11 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gradient">K-POP Math</h1>
                     <div className="flex items-center gap-4">
+                        <Link href="/lessons" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
+                            All Lessons
+                        </Link>
                         <Link href="/analytics" className="text-kpop-purple hover:text-kpop-purple/80 font-medium text-sm">
-                            View Analytics
+                            Analytics
                         </Link>
                         <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900">
                             Logout
