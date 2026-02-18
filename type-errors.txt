@@ -1,5 +1,0 @@
-﻿
-> kpop-math-mvp@0.1.0 type-check
-> tsc --noEmit
-
-app/admin/lessons/new/LessonForm.tsx(76,24): error TS7006: Parameter 'prev' implicitly has an 'any' type.
