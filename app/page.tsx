@@ -85,7 +85,7 @@ export default function LandingPage() {
                     <div className="gradient-hero rounded-3xl p-12 md:p-16 max-w-4xl mx-auto text-white shadow-neon animate-fade-in">
                         <h2 className="text-3xl md:text-4xl font-heading mb-4">Ready to Start Your Journey?</h2>
                         <p className="text-lg md:text-xl mb-10 opacity-90">
-                            Join thousands of students learning algebra the fun way!
+                            Start your algebra journey with K-pop today.
                         </p>
                         <div className="flex gap-4 justify-center flex-wrap">
                             <Link
