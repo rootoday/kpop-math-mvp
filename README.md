@@ -1,89 +1,41 @@
-# K-POP Math MVP
-
-Learn algebra through K-pop! An interactive educational platform featuring tier-based learning with your favorite K-pop artists.
-
-## 🚀 Quick Start
-
+# K-POP Math
+**K-pop 아티스트로 배우는 대수학 학습 플랫폼**
+> 팔로워 71명 Instagram 계정에서 7일간 조회 27,001회, 도달 21,346계정 달성.
+> 반응의 99.2%가 비팔로워에서 발생 — 콘텐츠 자체의 시장 반응을 확인했습니다.
+🔗 **[Live Demo →](https://kpop-math-mvp.vercel.app)**
+---
+## 제품 소개
+NewJeans, SEVENTEEN 등 K-pop 아티스트를 활용한 5단계 티어 기반 대수학 학습 플랫폼입니다.
+- 회원가입 → 레슨 선택 → XP 획득 전체 플로우 작동
+- Hook → Concept → Practice → Deep Practice → Wrap-up 5단계 구조
+- Playwright E2E 테스트 24/25 PASS
+## 트랙션 (2026년 2월 기준)
+| 지표 | 수치 |
+|------|------|
+| Instagram 조회 (7일) | 27,001 |
+| 도달 계정 | 21,346 |
+| 비팔로워 도달 비율 | 99.2% |
+| 공유 | 487 |
+| 좋아요 | 1,627 |
+## 기술 스택
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Testing**: Playwright E2E
+- **Deployment**: Vercel + GitHub Actions CI
+## CI/CD
+![CI](https://github.com/rootoday/kpop-math-mvp/actions/workflows/ci.yml/badge.svg)
+---
+## 개발 환경 설정
 ### Prerequisites
 - Node.js 20+ and npm
 - Supabase account
 - Vercel account (for deployment)
-
 ### Local Development
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables:**
-   ```bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your Supabase credentials
-   ```
-
-3. **Run database migrations:**
-   ```bash
-   # Install Supabase CLI
-   npm install -g supabase
-   
-   # Link to your project
-   supabase link --project-ref your-project-ref
-   
-   # Run migrations
-   supabase db push
-   ```
-
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Open [http://localhost:3000](http://localhost:3000)**
-
-## 📦 Deployment
-
-### Vercel (Recommended)
-
-1. **Push to GitHub**
-2. **Import project in Vercel**
-3. **Add environment variables:**
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-4. **Deploy!**
-
-### Manual Build
-
-```bash
-npm run build
-npm run start
-```
-
-## 🏗️ Project Structure
-
-```
-├── app/              # Next.js App Router pages
-│   ├── api/          # API routes
-│   ├── dashboard/    # Dashboard page
-│   ├── lessons/      # Lesson pages
-│   └── page.tsx      # Landing page
-├── components/       # React components
-├── lib/              # Utilities and configs
-│   └── supabase/     # Supabase clients
-├── types/            # TypeScript types
-├── supabase/
-│   └── migrations/   # Database migrations
-└── public/           # Static assets
-```
-
-## 🔧 Tech Stack
-
-- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Backend:** Supabase (PostgreSQL + Auth)
-- **Deployment:** Vercel
-- **AI:** Claude API (optional, for admin)
-
-## 📝 License
-
-MIT
+1. Install dependencies:
+npm install
+2. Set up environment variables:
+cp .env.local.example .env.local
+3. Run database migrations:
+supabase db push
+4. Start development server:
+npm run dev
