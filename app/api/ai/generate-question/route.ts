@@ -10,7 +10,7 @@ import type { Database } from '@/types/database.types'
 function isValidBody(body: unknown): body is GenerateQuestionRequest {
   if (typeof body !== 'object' || body === null) return false
   const b = body as Record<string, unknown>
-  return (
+  const baseValid =
     typeof b.topic === 'string' &&
     b.topic.length > 0 &&
     typeof b.difficulty === 'number' &&
@@ -18,7 +18,10 @@ function isValidBody(body: unknown): body is GenerateQuestionRequest {
     b.difficulty <= 5 &&
     typeof b.artistName === 'string' &&
     b.artistName.length > 0
-  )
+  if (!baseValid) return false
+  // tier is optional, but if provided must be 3 or 4
+  if (b.tier !== undefined && b.tier !== 3 && b.tier !== 4) return false
+  return true
 }
 
 // ─── POST /api/ai/generate-question ─────────────────────────

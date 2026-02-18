@@ -31,17 +31,35 @@ export function getClaudeClient(): Anthropic {
 
 // ─── Prompt Builder ──────────────────────────────────────────
 function buildPrompt(req: GenerateQuestionRequest): string {
+  if (req.tier === 4) {
+    return `You are a K-pop math tutor. Always respond in English. Create ONE fill-in-the-blank math problem.
+
+Topic: ${req.topic}
+Difficulty: ${req.difficulty}/5
+K-pop Artist Theme: ${req.artistName}
+Question Type: Fill in the blank (student types the answer)
+
+Return ONLY valid JSON in English (no markdown, no backticks):
+{
+  "question": "question text here (use ___ for the blank)",
+  "choices": [],
+  "correctAnswer": "the exact correct answer",
+  "explanation": "brief explanation"
+}`
+  }
+
   return `You are a K-pop math tutor. Always respond in English. Create ONE math problem.
 
 Topic: ${req.topic}
 Difficulty: ${req.difficulty}/5
 K-pop Artist Theme: ${req.artistName}
+Question Type: Multiple choice with 4 options
 
 Return ONLY valid JSON in English (no markdown, no backticks):
 {
   "question": "question text here",
   "choices": ["A", "B", "C", "D"],
-  "correctAnswer": "the correct answer",
+  "correctAnswer": "the correct answer (must exactly match one of the choices)",
   "explanation": "brief explanation"
 }`
 }

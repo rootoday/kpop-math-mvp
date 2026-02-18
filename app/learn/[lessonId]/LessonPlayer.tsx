@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import type { FullLesson, TierLevel, BaseTier } from '@/types'
+import type { FullLesson, TierLevel, BaseTier, UserProgress, User } from '@/types'
 import confetti from 'canvas-confetti'
 import ProgressBar from './components/ProgressBar'
 import TierHeader from './components/TierHeader'
@@ -16,20 +16,33 @@ import { motion } from 'framer-motion'
 
 interface LessonPlayerProps {
     lesson: FullLesson
+    initialProgress: UserProgress | null
+    user: User
 }
 
-export default function LessonPlayer({ lesson }: LessonPlayerProps) {
+export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerProps) {
     const router = useRouter()
     const tc = lesson.tier_content
 
     // --- State ---
-    const [currentTier, setCurrentTier] = useState<TierLevel>(1)
-    const [completedTiers, setCompletedTiers] = useState<Set<number>>(new Set())
+    const [currentTier, setCurrentTier] = useState<TierLevel>(
+        (initialProgress?.current_tier as TierLevel) || 1
+    )
+    const [completedTiers, setCompletedTiers] = useState<Set<number>>(() => {
+        const initial = new Set<number>()
+        if (initialProgress?.current_tier) {
+            for (let t = 1; t < initialProgress.current_tier; t++) {
+                initial.add(t)
+            }
+        }
+        return initial
+    })
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
     const [textAnswer, setTextAnswer] = useState('')
     const [showFeedback, setShowFeedback] = useState(false)
     const [isCorrect, setIsCorrect] = useState(false)
-    const [totalXp, setTotalXp] = useState(0)
+    const [score, setScore] = useState(initialProgress?.score || 0)
+    const [totalXp, setTotalXp] = useState(initialProgress?.xp_earned || 0)
     const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward')
 
     // --- Helpers ---
@@ -48,6 +61,25 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
         setShowFeedback(false)
         setIsCorrect(false)
     }, [])
+
+    // --- Progress Persistence ---
+    const updateProgress = async (status: string) => {
+        try {
+            await fetch('/api/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    lesson_id: lesson.id,
+                    current_tier: currentTier,
+                    score,
+                    xp_earned: totalXp,
+                    status,
+                }),
+            })
+        } catch (error) {
+            console.error('Failed to update progress:', error)
+        }
+    }
 
     // --- Navigation ---
     const handleCompleteTier = () => {
@@ -86,6 +118,7 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
             setShowFeedback(true)
             if (correct) {
                 setTotalXp(prev => prev + tc.tier3.xpReward)
+                setScore(prev => prev + 20)
             }
         } else if (currentTier === 4) {
             const normalized = textAnswer.toLowerCase().replace(/\s/g, '')
@@ -96,8 +129,10 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
             setShowFeedback(true)
             if (correct) {
                 setTotalXp(prev => prev + tc.tier4.xpReward)
+                setScore(prev => prev + 20)
             }
         }
+        updateProgress('in_progress')
     }
 
     // --- Confetti on Tier 5 ---
@@ -110,6 +145,7 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
                 return next
             })
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
+            updateProgress('completed')
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTier])
@@ -176,10 +212,34 @@ export default function LessonPlayer({ lesson }: LessonPlayerProps) {
                                 <p className="text-lg text-gray-700 mb-6 leading-relaxed">
                                     {tc.tier1.text}
                                 </p>
-                                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg h-48
-                                                flex items-center justify-center mb-6">
-                                    <span className="text-gray-500 text-lg">🎵 {lesson.artist}</span>
+
+                                <div className="rounded-lg overflow-hidden mb-6 bg-gray-100 shadow-inner">
+                                    {(tc.tier1.mediaType === 'youtube' && tc.tier1.imageUrl) ? (
+                                        <div className="relative pt-[56.25%]">
+                                            <iframe
+                                                src={`https://www.youtube.com/embed/${(() => {
+                                                    const match = tc.tier1.imageUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/)
+                                                    return (match && match[2].length === 11) ? match[2] : ''
+                                                })()}`}
+                                                className="absolute top-0 left-0 w-full h-full"
+                                                title="Lesson Video"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    ) : tc.tier1.imageUrl ? (
+                                        <img
+                                            src={tc.tier1.imageUrl}
+                                            alt={tc.tier1.title}
+                                            className="w-full h-auto object-cover max-h-96"
+                                        />
+                                    ) : (
+                                        <div className="h-48 flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
+                                            <span className="text-gray-500 text-lg">🎵 {lesson.artist}</span>
+                                        </div>
+                                    )}
                                 </div>
+
                                 <AnimatedButton variant="primary" fullWidth onClick={handleCompleteTier}>
                                     Let&apos;s Learn! →
                                 </AnimatedButton>

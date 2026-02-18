@@ -21,7 +21,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     const [isAIModalOpen, setIsAIModalOpen] = useState(false)
     const [lastAIQuestion, setLastAIQuestion] = useState<AIQuestion | null>(null)
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-    const [isSavingAI, setIsSavingAI] = useState(false)
+    const [formKey, setFormKey] = useState(0)
     const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
     const [lessons, setLessons] = useState(initialLessons)
 
@@ -67,9 +67,9 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
     }
 
     return (
-        <div className="flex h-[calc(100vh-100px)] gap-6">
+        <div className="flex flex-col md:flex-row h-auto md:h-[calc(100vh-100px)] gap-4 md:gap-6">
             {/* LEFT PANE: Lesson List */}
-            <div className="w-1/3 bg-white rounded-xl shadow-kpop border border-gray-100 flex flex-col overflow-hidden">
+            <div className="w-full md:w-1/3 max-h-[50vh] md:max-h-none bg-white rounded-xl shadow-kpop border border-gray-100 flex flex-col overflow-hidden">
                 <div className="p-4 border-b">
                     <button
                         onClick={handleCreateNew}
@@ -195,7 +195,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
             </div>
 
             {/* RIGHT PANE: Editor Form */}
-            <div className="w-2/3 h-full overflow-y-auto bg-white rounded-xl shadow-kpop border border-gray-100 p-8">
+            <div className="w-full md:w-2/3 h-auto md:h-full overflow-y-auto bg-white rounded-xl shadow-kpop border border-gray-100 p-4 md:p-8">
                 {isLoading ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400">
                         <div className="w-8 h-8 border-4 border-kpop-purple/30 border-t-kpop-purple rounded-full animate-spin mb-4"></div>
@@ -240,7 +240,7 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
 
                         {/* Key forces re-mount when selection changes to reset form state */}
                         <LessonForm
-                            key={selectedLessonId || 'new'}
+                            key={`${selectedLessonId || 'new'}-${formKey}`}
                             lessonId={selectedLessonId || undefined}
                             initialData={editorData ? {
                                 title: editorData.title,
@@ -259,39 +259,62 @@ export default function LessonManager({ initialLessons }: LessonManagerProps) {
             <AIQuestionGeneratorModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}
-                onAddToLesson={async (question) => {
+                onAddToLesson={(question, tier) => {
                     setIsAIModalOpen(false)
 
-                    if (!selectedLessonId) {
-                        // No lesson selected — just show the preview banner
+                    if (!selectedLessonId || !editorData) {
                         setLastAIQuestion(question)
                         setToast({ type: 'success', message: 'Question generated! Select a lesson to save it.' })
                         setTimeout(() => setToast(null), 4000)
                         return
                     }
 
-                    // PATCH the question into the selected lesson
-                    setIsSavingAI(true)
-                    try {
-                        const res = await fetch(`/api/lessons/${selectedLessonId}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ question }),
-                        })
-                        const data = await res.json()
+                    // Directly update editorData with the AI question mapped to the selected tier
+                    const currentTierContent = editorData.tier_content || {}
 
-                        if (!res.ok || !data.success) {
-                            setToast({ type: 'error', message: data.error ?? 'Failed to add question' })
-                        } else {
-                            setLastAIQuestion(question)
-                            setToast({ type: 'success', message: `Question added to lesson! (${data.data.questionsCount} total)` })
-                        }
-                    } catch (err) {
-                        setToast({ type: 'error', message: err instanceof Error ? err.message : 'Network error' })
-                    } finally {
-                        setIsSavingAI(false)
-                        setTimeout(() => setToast(null), 4000)
+                    if (tier === 4) {
+                        setEditorData({
+                            ...editorData,
+                            tier_content: {
+                                ...currentTierContent,
+                                tier4: {
+                                    ...currentTierContent.tier4,
+                                    questionText: question.question,
+                                    questionType: 'fill_in_blank' as const,
+                                    correctAnswer: question.correctAnswer,
+                                    acceptableAnswers: [],
+                                    hint: question.explanation,
+                                },
+                            },
+                        })
+                    } else {
+                        // Default: Tier 3 (multiple choice)
+                        setEditorData({
+                            ...editorData,
+                            tier_content: {
+                                ...currentTierContent,
+                                tier3: {
+                                    ...currentTierContent.tier3,
+                                    questionText: question.question,
+                                    questionType: 'multiple_choice' as const,
+                                    options: question.choices.map((c, i) => ({
+                                        id: String.fromCharCode(97 + i),
+                                        text: c,
+                                        isCorrect: c === question.correctAnswer,
+                                    })),
+                                    hint: question.explanation,
+                                },
+                            },
+                        })
                     }
+
+                    // Force form remount with the updated data
+                    setFormKey(prev => prev + 1)
+
+                    setLastAIQuestion(question)
+                    const tierLabel = tier === 4 ? 'Tier 4 (Fill in Blank)' : 'Tier 3 (Multiple Choice)'
+                    setToast({ type: 'success', message: `Question added to ${tierLabel}! Auto-save will persist it.` })
+                    setTimeout(() => setToast(null), 4000)
                 }}
             />
 

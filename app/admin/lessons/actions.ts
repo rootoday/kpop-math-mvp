@@ -89,7 +89,7 @@ export async function updateLesson(id: string, formData: FormData) {
     revalidatePath('/admin/lessons')
     revalidatePath('/dashboard')
     revalidatePath(`/lessons/${id}`)
-    redirect('/admin/lessons')
+    return { success: true }
 }
 
 export async function deleteLesson(id: string) {
