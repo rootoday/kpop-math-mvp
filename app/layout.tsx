@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     title: 'K-POP Math MVP - Learn Algebra with K-pop',
     description: 'Learn algebra through K-pop! Interactive tier-based learning with your favorite K-pop artists.',
     keywords: ['K-pop', 'math', 'education', 'algebra', 'NewJeans', 'learning'],
+    icons: { icon: '/favicon.ico' },
 }
 
 export default function RootLayout({

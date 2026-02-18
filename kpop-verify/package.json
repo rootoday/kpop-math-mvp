@@ -1,0 +1,11 @@
+{
+  "name": "kpop-math-mvp-verify",
+  "version": "1.0.0",
+  "description": "Playwright verification script for K-pop Math MVP",
+  "scripts": {
+    "verify": "node verify-mvp.js"
+  },
+  "dependencies": {
+    "playwright": "^1.42.0"
+  }
+}
