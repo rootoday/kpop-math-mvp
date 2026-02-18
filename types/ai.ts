@@ -18,6 +18,7 @@ export interface GenerateQuestionRequest {
   topic: string
   difficulty: number   // 1-5
   artistName: string
+  tier?: number        // 3 = multiple choice, 4 = fill in blank
 }
 
 /** Response from the generate-question endpoint */
