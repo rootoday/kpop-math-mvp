@@ -19,6 +19,13 @@ export default async function AdminDashboardPage() {
 
     const totalXp = (usersData as any[])?.reduce((sum, u) => sum + (u.xp_points || 0), 0) || 0
 
+    // MAU: users active in the last 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { count: mauCount } = await (supabase as any)
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .gte('last_login_date', thirtyDaysAgo)
+
     const stats = [
         {
             label: 'Total Users',
@@ -41,13 +48,20 @@ export default async function AdminDashboardPage() {
             iconBg: 'bg-kpop-red/10',
             iconColor: 'text-kpop-red',
         },
+        {
+            label: 'Monthly Active Users',
+            value: mauCount || 0,
+            accent: 'border-blue-500',
+            iconBg: 'bg-blue-500/10',
+            iconColor: 'text-blue-500',
+        },
     ]
 
     return (
         <div className="animate-fade-in">
             <h2 className="text-3xl font-heading mb-8">Admin Dashboard</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat) => (
                     <div
                         key={stat.label}
