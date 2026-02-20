@@ -63,7 +63,7 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
     }, [])
 
     // --- Progress Persistence ---
-    const updateProgress = async (status: string) => {
+    const updateProgress = async (status: string, overrideXp?: number) => {
         try {
             await fetch('/api/progress', {
                 method: 'POST',
@@ -72,7 +72,7 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
                     lesson_id: lesson.id,
                     current_tier: currentTier,
                     score,
-                    xp_earned: totalXp,
+                    xp_earned: overrideXp ?? totalXp,
                     status,
                 }),
             })
@@ -138,14 +138,15 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
     // --- Confetti on Tier 5 ---
     useEffect(() => {
         if (currentTier === 5) {
-            setTotalXp(prev => prev + tc.tier5.totalXpReward)
+            const finalXp = totalXp + tc.tier5.totalXpReward
+            setTotalXp(finalXp)
             setCompletedTiers(prev => {
                 const next = new Set(prev)
                 next.add(5)
                 return next
             })
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
-            updateProgress('completed')
+            updateProgress('completed', finalXp)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTier])

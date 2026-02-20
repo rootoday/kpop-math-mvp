@@ -44,8 +44,10 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
             setCurrentTier(currentTier + 1)
             resetAnswerState()
         } else {
-            // Lesson completed
-            await updateProgress('completed')
+            // Lesson completed - include tier 5 bonus XP
+            const finalXp = xpEarned + tierContent.tier5.totalXpReward
+            setXpEarned(finalXp)
+            await updateProgress('completed', finalXp)
             router.push('/dashboard')
         }
     }
@@ -87,7 +89,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
         await updateProgress('in_progress')
     }
 
-    const updateProgress = async (status: string) => {
+    const updateProgress = async (status: string, overrideXp?: number) => {
         try {
             await fetch('/api/progress', {
                 method: 'POST',
@@ -96,7 +98,7 @@ export default function LessonClient({ lesson, initialProgress, user }: LessonCl
                     lesson_id: lesson.id,
                     current_tier: currentTier,
                     score,
-                    xp_earned: xpEarned,
+                    xp_earned: overrideXp ?? xpEarned,
                     status,
                 }),
             })
