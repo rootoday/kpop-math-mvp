@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useCallback, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createLesson, updateLesson } from '../actions'
 import type { TierContent } from '@/types/database.types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
@@ -97,6 +98,8 @@ interface LessonState {
 }
 
 export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
+    const router = useRouter()
+
     // 1. Initialize Hook with Unified State
     const { state, setState, undo, redo, canUndo, canRedo } = useUndoRedo<LessonState>({
         title: initialData?.title || '',
@@ -110,6 +113,7 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
     // 2. Setup Auto-Save
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
     const handleSave = useCallback(async (data: LessonState) => {
         if (!lessonId) return // Don't auto-save new lessons until created
@@ -232,6 +236,26 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                     </div>
                 )}
             </div>
+
+            {successMessage && (
+                <div role="status" className="bg-green-50 border-l-4 border-green-500 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in mb-6">
+                    <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-green-700 font-medium text-sm">{successMessage}</span>
+                    </div>
+                    <button
+                        onClick={() => setSuccessMessage(null)}
+                        className="text-green-400 hover:text-green-600 transition-colors"
+                        aria-label="Dismiss success message"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             {error && (
                 <div role="alert" className="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in mb-6">
@@ -378,6 +402,7 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                         <button
                             onClick={async () => {
                                 setError(null)
+                                setSuccessMessage(null)
                                 setIsSubmitting(true)
                                 try {
                                     const formData = new FormData()
@@ -391,6 +416,10 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                                     if (result?.error) {
                                         setError(result.error)
                                         setIsSubmitting(false)
+                                    } else {
+                                        setSuccessMessage('Lesson created successfully!')
+                                        setIsSubmitting(false)
+                                        router.refresh()
                                     }
                                 } catch (e) {
                                     setError('An unexpected error occurred. Please try again.')

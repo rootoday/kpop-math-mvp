@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import type { Tier1Content, Tier2Content, Tier3Content, Tier4Content, Tier5Content } from '@/types/database.types'
 
 interface Tier1EditorProps {
@@ -245,8 +245,19 @@ interface Tier4EditorProps {
 }
 
 export function Tier4Editor({ data, onChange }: Tier4EditorProps) {
-    const handleAcceptableAnswersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const answers = e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+    const [rawAnswersInput, setRawAnswersInput] = useState(data.acceptableAnswers?.join(', ') || '')
+    const [isAnswersFocused, setIsAnswersFocused] = useState(false)
+
+    // Sync from parent when not focused (e.g., undo/redo or external updates)
+    useEffect(() => {
+        if (!isAnswersFocused) {
+            setRawAnswersInput(data.acceptableAnswers?.join(', ') || '')
+        }
+    }, [data.acceptableAnswers, isAnswersFocused])
+
+    const handleAnswersBlur = () => {
+        setIsAnswersFocused(false)
+        const answers = rawAnswersInput.split(',').map(s => s.trim()).filter(Boolean)
         onChange({ ...data, acceptableAnswers: answers })
     }
 
@@ -275,8 +286,10 @@ export function Tier4Editor({ data, onChange }: Tier4EditorProps) {
             <div>
                 <label className="block text-sm font-medium text-gray-700">Other Acceptable Answers (comma separated)</label>
                 <input
-                    value={data.acceptableAnswers?.join(', ') || ''}
-                    onChange={handleAcceptableAnswersChange}
+                    value={rawAnswersInput}
+                    onChange={(e) => setRawAnswersInput(e.target.value)}
+                    onFocus={() => setIsAnswersFocused(true)}
+                    onBlur={handleAnswersBlur}
                     className="input-field mt-1"
                     placeholder="ans1, ans2, ans3..."
                 />

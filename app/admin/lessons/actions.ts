@@ -3,7 +3,6 @@
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import type { Database } from '@/types/database.types'
 import type { TierContent } from '@/types'
 
@@ -43,7 +42,7 @@ export async function createLesson(formData: FormData) {
 
     revalidatePath('/admin/lessons')
     revalidatePath('/dashboard')
-    redirect('/admin/lessons')
+    return { success: true }
 }
 
 export async function updateLesson(id: string, formData: FormData) {
