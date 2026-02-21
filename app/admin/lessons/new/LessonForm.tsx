@@ -109,6 +109,7 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
 
     // 2. Setup Auto-Save
     const [error, setError] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleSave = useCallback(async (data: LessonState) => {
         if (!lessonId) return // Don't auto-save new lessons until created
@@ -376,18 +377,30 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                     {!lessonId && (
                         <button
                             onClick={async () => {
-                                const formData = new FormData()
-                                formData.append('title', state.title)
-                                formData.append('artist', state.artist)
-                                formData.append('math_concept', state.math_concept)
-                                formData.append('difficulty', state.difficulty)
-                                formData.append('tier_content', JSON.stringify(state.tier_content))
-                                if (state.is_published) formData.append('is_published', 'true')
-                                await createLesson(formData)
+                                setError(null)
+                                setIsSubmitting(true)
+                                try {
+                                    const formData = new FormData()
+                                    formData.append('title', state.title)
+                                    formData.append('artist', state.artist)
+                                    formData.append('math_concept', state.math_concept)
+                                    formData.append('difficulty', state.difficulty)
+                                    formData.append('tier_content', JSON.stringify(state.tier_content))
+                                    if (state.is_published) formData.append('is_published', 'true')
+                                    const result = await createLesson(formData)
+                                    if (result?.error) {
+                                        setError(result.error)
+                                        setIsSubmitting(false)
+                                    }
+                                } catch (e) {
+                                    setError('An unexpected error occurred. Please try again.')
+                                    setIsSubmitting(false)
+                                }
                             }}
-                            className="btn-primary min-w-[140px]"
+                            disabled={isSubmitting}
+                            className="btn-primary min-w-[140px] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Create Lesson
+                            {isSubmitting ? 'Creating...' : 'Create Lesson'}
                         </button>
                     )}
                 </div>
