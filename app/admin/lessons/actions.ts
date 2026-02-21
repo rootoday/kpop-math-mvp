@@ -8,9 +8,7 @@ import type { Database } from '@/types/database.types'
 import type { TierContent } from '@/types'
 
 export async function createLesson(formData: FormData) {
-    const supabase = createServerActionClient<Database>({
-        cookies: () => cookies()
-    })
+    const supabase = createServerActionClient<Database>({ cookies })
 
     const title = formData.get('title') as string
     const artist = formData.get('artist') as string
@@ -49,9 +47,7 @@ export async function createLesson(formData: FormData) {
 }
 
 export async function updateLesson(id: string, formData: FormData) {
-    const supabase = createServerActionClient<Database>({
-        cookies: () => cookies()
-    })
+    const supabase = createServerActionClient<Database>({ cookies })
 
     const title = formData.get('title') as string
     const artist = formData.get('artist') as string
@@ -93,9 +89,7 @@ export async function updateLesson(id: string, formData: FormData) {
 }
 
 export async function deleteLesson(id: string) {
-    const supabase = createServerActionClient<Database>({
-        cookies: () => cookies()
-    })
+    const supabase = createServerActionClient<Database>({ cookies })
 
     const { error } = await (supabase as any)
         .from('lessons')
@@ -112,9 +106,7 @@ export async function deleteLesson(id: string) {
 }
 
 export async function getLesson(id: string) {
-    const supabase = createServerActionClient<Database>({
-        cookies: () => cookies()
-    })
+    const supabase = createServerActionClient<Database>({ cookies })
 
     const { data, error } = await (supabase as any)
         .from('lessons')
