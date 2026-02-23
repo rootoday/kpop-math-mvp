@@ -24,7 +24,8 @@ export async function GET(
 }
 
 // ─── PATCH /api/lessons/[id] ────────────────────────────────
-// Appends an AI-generated question to tier_content.ai_questions
+// Writes an AI-generated question to the appropriate tier (tier3/tier4)
+// in tier_content, and also appends to ai_questions for history tracking.
 export async function PATCH(
     request: Request,
     { params }: { params: { id: string } }
@@ -53,7 +54,7 @@ export async function PATCH(
         )
     }
 
-    let body: { question: AIQuestion }
+    let body: { question: AIQuestion; tier?: number }
     try {
         body = await request.json()
     } catch {
@@ -88,22 +89,46 @@ export async function PATCH(
         )
     }
 
-    // 2. Append to ai_questions array inside tier_content
+    // 2. Build updated tier_content with the question mapped to the correct tier
     const tierContent = (lesson.tier_content ?? {}) as Record<string, unknown>
+    const tier = body.tier ?? 3
+
+    // Write to the actual tier fields that the lesson player reads
+    if (tier === 4) {
+        tierContent.tier4 = {
+            ...(tierContent.tier4 as Record<string, unknown> ?? {}),
+            questionText: body.question.question,
+            questionType: 'fill_in_blank',
+            correctAnswer: body.question.correctAnswer,
+            acceptableAnswers: [],
+            hint: body.question.explanation,
+        }
+    } else {
+        tierContent.tier3 = {
+            ...(tierContent.tier3 as Record<string, unknown> ?? {}),
+            questionText: body.question.question,
+            questionType: 'multiple_choice',
+            options: body.question.choices.map((c: string, i: number) => ({
+                id: String.fromCharCode(97 + i),
+                text: c,
+                isCorrect: c === body.question.correctAnswer,
+            })),
+            hint: body.question.explanation,
+        }
+    }
+
+    // Also append to ai_questions for history tracking
     const existingQuestions = Array.isArray(tierContent.ai_questions)
         ? tierContent.ai_questions as AIQuestion[]
         : []
 
-    const updatedTierContent = {
-        ...tierContent,
-        ai_questions: [...existingQuestions, body.question],
-    }
+    tierContent.ai_questions = [...existingQuestions, body.question]
 
     // 3. Persist to Supabase
     const { error: updateError } = await (supabase as any)
         .from('lessons')
         .update({
-            tier_content: updatedTierContent,
+            tier_content: tierContent,
             updated_at: new Date().toISOString(),
         })
         .eq('id', params.id)
@@ -115,8 +140,9 @@ export async function PATCH(
         )
     }
 
+    const tierLabel = tier === 4 ? 'Tier 4' : 'Tier 3'
     return NextResponse.json({
         success: true,
-        data: { questionsCount: existingQuestions.length + 1 },
+        data: { questionsCount: existingQuestions.length + 1, tier: tierLabel },
     })
 }

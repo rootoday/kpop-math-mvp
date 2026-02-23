@@ -26,38 +26,62 @@ interface Toast {
 export default function LessonEditClient({ lessonId, initialData }: LessonEditClientProps) {
     const [isAIModalOpen, setIsAIModalOpen] = useState(false)
     const [toast, setToast] = useState<Toast | null>(null)
-    const [isSaving, setIsSaving] = useState(false)
+    const [formData, setFormData] = useState(initialData)
+    const [formKey, setFormKey] = useState(0)
 
     const showToast = useCallback((type: Toast['type'], message: string) => {
         setToast({ type, message })
         setTimeout(() => setToast(null), 4000)
     }, [])
 
-    const handleAddToLesson = useCallback(async (question: AIQuestion) => {
-        setIsSaving(true)
+    const handleAddToLesson = useCallback((question: AIQuestion, tier: number) => {
         setIsAIModalOpen(false)
 
-        try {
-            const res = await fetch(`/api/lessons/${lessonId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question }),
-            })
+        const currentTierContent = formData.tier_content || {}
 
-            const data = await res.json()
+        let updatedTierContent: TierContent
 
-            if (!res.ok || !data.success) {
-                showToast('error', data.error ?? 'Failed to add question to lesson')
-                return
+        if (tier === 4) {
+            updatedTierContent = {
+                ...currentTierContent,
+                tier4: {
+                    ...currentTierContent.tier4,
+                    questionText: question.question,
+                    questionType: 'fill_in_blank' as const,
+                    correctAnswer: question.correctAnswer,
+                    acceptableAnswers: [],
+                    hint: question.explanation,
+                },
             }
-
-            showToast('success', `Question added to lesson! (${data.data.questionsCount} total)`)
-        } catch (err) {
-            showToast('error', err instanceof Error ? err.message : 'Network error')
-        } finally {
-            setIsSaving(false)
+        } else {
+            // Default: Tier 3 (multiple choice)
+            updatedTierContent = {
+                ...currentTierContent,
+                tier3: {
+                    ...currentTierContent.tier3,
+                    questionText: question.question,
+                    questionType: 'multiple_choice' as const,
+                    options: question.choices.map((c, i) => ({
+                        id: String.fromCharCode(97 + i),
+                        text: c,
+                        isCorrect: c === question.correctAnswer,
+                    })),
+                    hint: question.explanation,
+                },
+            }
         }
-    }, [lessonId, showToast])
+
+        setFormData(prev => ({
+            ...prev,
+            tier_content: updatedTierContent,
+        }))
+
+        // Force form remount so it re-initializes from the updated data
+        setFormKey(prev => prev + 1)
+
+        const tierLabel = tier === 4 ? 'Tier 4 (Fill in Blank)' : 'Tier 3 (Multiple Choice)'
+        showToast('success', `Question added to ${tierLabel}! Auto-save will persist it.`)
+    }, [formData, showToast])
 
     return (
         <>
@@ -65,29 +89,20 @@ export default function LessonEditClient({ lessonId, initialData }: LessonEditCl
             <div className="flex justify-end mb-4">
                 <button
                     onClick={() => setIsAIModalOpen(true)}
-                    disabled={isSaving}
-                    className="py-2 px-4 bg-gradient-to-r from-kpop-purple to-kpop-red text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 text-sm disabled:opacity-50"
+                    className="py-2 px-4 bg-gradient-to-r from-kpop-purple to-kpop-red text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 text-sm"
                 >
-                    {isSaving ? (
-                        <>
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Saving...
-                        </>
-                    ) : (
-                        <>
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            AI Question Generator
-                        </>
-                    )}
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    AI Question Generator
                 </button>
             </div>
 
-            {/* Lesson Form */}
+            {/* Lesson Form — key forces remount when AI question is added */}
             <LessonForm
+                key={formKey}
                 lessonId={lessonId}
-                initialData={initialData}
+                initialData={formData}
             />
 
             {/* AI Modal */}
