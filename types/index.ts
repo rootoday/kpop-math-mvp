@@ -15,6 +15,10 @@ export type UserProgress = Database['public']['Tables']['user_progress']['Row']
 export type UserProgressInsert = Database['public']['Tables']['user_progress']['Insert']
 export type UserProgressUpdate = Database['public']['Tables']['user_progress']['Update']
 
+export type MathConcept = Database['public']['Tables']['math_concepts']['Row']
+export type MathConceptInsert = Database['public']['Tables']['math_concepts']['Insert']
+export type MathConceptUpdate = Database['public']['Tables']['math_concepts']['Update']
+
 // UI-specific types
 export interface DashboardStats {
     xpPoints: number

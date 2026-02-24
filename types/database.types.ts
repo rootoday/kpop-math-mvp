@@ -144,6 +144,36 @@ export interface Database {
                 }
                 Relationships: any[]
             }
+            math_concepts: {
+                Row: {
+                    id: string
+                    name: string
+                    description: string
+                    category: string
+                    is_active: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    description?: string
+                    category?: string
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    description?: string
+                    category?: string
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: any[]
+            }
             lesson_progress: {
                 Row: LessonProgress
                 Insert: Omit<LessonProgress, 'id' | 'created_at' | 'updated_at'>

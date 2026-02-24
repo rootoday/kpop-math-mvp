@@ -35,6 +35,9 @@ export default async function AdminLayout({
                     <Link href="/admin/lessons" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
                         Manage Lessons
                     </Link>
+                    <Link href="/admin/math-concepts" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
+                        Math Concepts
+                    </Link>
                     <Link href="/admin/users" className="block px-4 py-3 rounded-lg hover:bg-white/15 transition-all duration-200 text-sm font-medium">
                         Manage Users
                     </Link>

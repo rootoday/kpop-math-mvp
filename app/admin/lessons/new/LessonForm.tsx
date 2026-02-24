@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useEffect, useCallback, useState } from 'react'
+import React, { useEffect, useCallback, useState, useRef } from 'react'
 import { createLesson, updateLesson } from '../actions'
 import type { TierContent } from '@/types/database.types'
+import type { MathConcept } from '@/types'
 import { Tier1Editor, Tier2Editor, Tier3Editor, Tier4Editor, Tier5Editor } from './TierEditors'
 import TierBlockEditor from '@/components/lessons/TierBlockEditor'
 import { useUndoRedo } from '@/lib/hooks/useUndoRedo'
@@ -106,6 +107,36 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
         tier_content: initialData?.tier_content || defaultTierContent,
         is_published: initialData?.is_published || false
     })
+
+    // Fetch math concepts from API
+    const [mathConcepts, setMathConcepts] = useState<MathConcept[]>([])
+    const [conceptDropdownOpen, setConceptDropdownOpen] = useState(false)
+    const [conceptSearch, setConceptSearch] = useState('')
+    const conceptRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        fetch('/api/math-concepts')
+            .then(res => res.json())
+            .then(data => {
+                if (data.concepts) setMathConcepts(data.concepts)
+            })
+            .catch(() => {})
+    }, [])
+
+    // Close concept dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (conceptRef.current && !conceptRef.current.contains(e.target as Node)) {
+                setConceptDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const filteredConcepts = mathConcepts.filter(c =>
+        c.name.toLowerCase().includes((conceptSearch || state.math_concept).toLowerCase())
+    )
 
     // 2. Setup Auto-Save
     const [error, setError] = useState<string | null>(null)
@@ -278,14 +309,41 @@ export default function LessonForm({ lessonId, initialData }: LessonFormProps) {
                             placeholder="e.g. NewJeans"
                         />
                     </div>
-                    <div>
+                    <div ref={conceptRef} className="relative">
                         <label className="block text-sm font-medium text-gray-700">Math Concept</label>
                         <input
                             value={state.math_concept}
-                            onChange={(e) => updateField('math_concept', e.target.value)}
+                            onChange={(e) => {
+                                updateField('math_concept', e.target.value)
+                                setConceptDropdownOpen(true)
+                            }}
+                            onFocus={() => setConceptDropdownOpen(true)}
                             className="input-field mt-1"
-                            placeholder="e.g. Combined Like Terms"
+                            placeholder="Select or type a concept..."
+                            autoComplete="off"
                         />
+                        {conceptDropdownOpen && filteredConcepts.length > 0 && (
+                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                {filteredConcepts.map((c) => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => {
+                                            updateField('math_concept', c.name)
+                                            setConceptDropdownOpen(false)
+                                        }}
+                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-kpop-purple/5 transition-colors ${
+                                            c.name === state.math_concept ? 'bg-kpop-purple/10 font-medium text-kpop-purple' : 'text-gray-700'
+                                        }`}
+                                    >
+                                        <span>{c.name}</span>
+                                        {c.category !== 'general' && (
+                                            <span className="ml-2 text-xs text-gray-400 capitalize">{c.category}</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Difficulty</label>
