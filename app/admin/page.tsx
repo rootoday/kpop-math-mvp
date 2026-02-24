@@ -79,6 +79,9 @@ export default async function AdminDashboardPage() {
                     <Link href="/admin/lessons/new" className="btn-primary">
                         Add New Lesson
                     </Link>
+                    <Link href="/admin/script-generator" className="btn-secondary">
+                        Script → AI Questions
+                    </Link>
                     <button className="btn-secondary">Export User Data</button>
                 </div>
             </div>
