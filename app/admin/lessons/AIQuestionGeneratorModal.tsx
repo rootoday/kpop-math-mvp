@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useAIQuestionGenerator } from '@/lib/hooks/useAIQuestionGenerator'
 import type { AIQuestion } from '@/types/ai'
+import type { MathConcept } from '@/types'
 
-const TOPICS = [
+const FALLBACK_TOPICS = [
     { value: 'percentages', label: 'Percentages' },
     { value: 'fractions', label: 'Fractions' },
     { value: 'ratios', label: 'Ratios' },
@@ -43,18 +44,38 @@ export default function AIQuestionGeneratorModal({
     onClose,
     onAddToLesson,
 }: AIQuestionGeneratorModalProps) {
-    const [topic, setTopic] = useState(TOPICS[0].value)
+    const [topics, setTopics] = useState(FALLBACK_TOPICS)
+    const [topic, setTopic] = useState(FALLBACK_TOPICS[0].value)
     const [difficulty, setDifficulty] = useState(3)
     const [tier, setTier] = useState(3)
     const [artists, setArtists] = useState(DEFAULT_ARTISTS)
     const [artistName, setArtistName] = useState(DEFAULT_ARTISTS[0].value)
     const [newArtist, setNewArtist] = useState('')
+    const [newTopic, setNewTopic] = useState('')
     const { loading, error, data: result, generateQuestion, reset } = useAIQuestionGenerator()
+
+    // Fetch math concepts from DB
+    useEffect(() => {
+        fetch('/api/math-concepts')
+            .then(res => res.json())
+            .then(data => {
+                if (data.concepts && data.concepts.length > 0) {
+                    const dbTopics = (data.concepts as MathConcept[]).map(c => ({
+                        value: c.name.toLowerCase().replace(/\s+/g, '-'),
+                        label: c.name,
+                    }))
+                    setTopics(dbTopics)
+                    setTopic(dbTopics[0].value)
+                }
+            })
+            .catch(() => {})
+    }, [])
 
     if (!isOpen) return null
 
     const handleGenerate = () => {
-        generateQuestion({ topic, difficulty, artistName, tier })
+        const topicLabel = topics.find(t => t.value === topic)?.label || topic
+        generateQuestion({ topic: topicLabel, difficulty, artistName, tier })
     }
 
     const handleAddToLesson = () => {
@@ -113,10 +134,48 @@ export default function AIQuestionGeneratorModal({
                             className="input-field w-full"
                             disabled={loading}
                         >
-                            {TOPICS.map((t) => (
+                            {topics.map((t) => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
                             ))}
                         </select>
+                        <div className="flex gap-2 mt-2">
+                            <input
+                                type="text"
+                                value={newTopic}
+                                onChange={(e) => setNewTopic(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault()
+                                        const trimmed = newTopic.trim()
+                                        if (trimmed && !topics.some(t => t.label.toLowerCase() === trimmed.toLowerCase())) {
+                                            const newValue = trimmed.toLowerCase().replace(/\s+/g, '-')
+                                            setTopics(prev => [...prev, { value: newValue, label: trimmed }])
+                                            setTopic(newValue)
+                                            setNewTopic('')
+                                        }
+                                    }
+                                }}
+                                placeholder="Add new concept..."
+                                disabled={loading}
+                                className="flex-1 px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-kpop-purple/20 transition-all"
+                            />
+                            <button
+                                type="button"
+                                disabled={loading || !newTopic.trim()}
+                                onClick={() => {
+                                    const trimmed = newTopic.trim()
+                                    if (trimmed && !topics.some(t => t.label.toLowerCase() === trimmed.toLowerCase())) {
+                                        const newValue = trimmed.toLowerCase().replace(/\s+/g, '-')
+                                        setTopics(prev => [...prev, { value: newValue, label: trimmed }])
+                                        setTopic(newValue)
+                                        setNewTopic('')
+                                    }
+                                }}
+                                className="px-3 py-1.5 bg-kpop-purple text-white text-sm font-bold rounded-lg hover:bg-kpop-purple/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
 
                     {/* Tier */}
