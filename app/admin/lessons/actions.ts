@@ -120,3 +120,35 @@ export async function getLesson(id: string) {
 
     return { data }
 }
+
+export async function createLessonFromAI(params: {
+    title: string
+    artist: string
+    math_concept: string
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+    tier_content: TierContent
+}) {
+    const supabase = createServerActionClient<Database>({ cookies })
+
+    const { data, error } = await (supabase as any)
+        .from('lessons')
+        .insert({
+            title: params.title,
+            artist: params.artist,
+            math_concept: params.math_concept,
+            difficulty: params.difficulty,
+            tier_content: params.tier_content,
+            is_published: false
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error('Error creating lesson from AI:', error)
+        return { error: error.message }
+    }
+
+    revalidatePath('/admin/lessons')
+    revalidatePath('/dashboard')
+    return { success: true, lessonId: data.id }
+}

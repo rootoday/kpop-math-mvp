@@ -86,3 +86,77 @@ export interface GenerateFromScriptResponse {
     outputTokens: number
   }
 }
+
+// ─── Full Lesson Generation (Tier 1~5) ─────────────────────
+
+/** AI-generated full lesson content (Tier 1~5) */
+export interface FullLessonGenerated {
+  tier1: {
+    title: string
+    shortDescription: string
+    learningObjective: string
+    text: string
+    estimatedMinutes: number
+  }
+  tier2: {
+    title: string
+    shortDescription: string
+    learningObjective: string
+    steps: { stepNumber: number; text: string }[]
+    estimatedMinutes: number
+  }
+  tier3: {
+    title: string
+    shortDescription: string
+    learningObjective: string
+    questionText: string
+    options: { id: string; text: string; isCorrect: boolean }[]
+    hint: string
+    xpReward: number
+    estimatedMinutes: number
+  }
+  tier4: {
+    title: string
+    shortDescription: string
+    learningObjective: string
+    questionText: string
+    correctAnswer: string
+    acceptableAnswers: string[]
+    hint: string
+    xpReward: number
+    estimatedMinutes: number
+  }
+  tier5: {
+    congratsText: string
+    summaryText: string
+    totalXpReward: number
+  }
+}
+
+/** Request body for POST /api/ai/generate-full-lesson */
+export interface GenerateFullLessonRequest {
+  script: VideoScript
+  difficulty?: number       // 1-5 (default: 3)
+  artistOverride?: string   // Override detected artist
+}
+
+/** Metadata suggested by AI for the lesson */
+export interface LessonMetadata {
+  suggestedTitle: string
+  suggestedDifficulty: 'beginner' | 'intermediate' | 'advanced'
+}
+
+/** Response from the generate-full-lesson endpoint */
+export interface GenerateFullLessonResponse {
+  success: boolean
+  data?: {
+    analysis: ScriptAnalysis
+    lesson: FullLessonGenerated
+    metadata: LessonMetadata
+  }
+  error?: string
+  usage?: {
+    inputTokens: number
+    outputTokens: number
+  }
+}
