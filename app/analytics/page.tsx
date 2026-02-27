@@ -1,9 +1,10 @@
-import { createServerClient, getCachedLessons, getCachedUserProgress, getCachedUser } from '@/lib/supabase/server'
+import { createServerClient, getCachedLessons, getUserProgress, getUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { User } from '@/types'
 import AnalyticsClient from './AnalyticsClient'
 
-export const revalidate = 3600
+// Force dynamic rendering — data must always be fresh after learning sessions
+export const dynamic = 'force-dynamic'
 
 export default async function AnalyticsPage() {
     const supabase = createServerClient()
@@ -15,8 +16,8 @@ export default async function AnalyticsPage() {
 
     const [lessons, userProgress, userData] = await Promise.all([
         getCachedLessons(),
-        getCachedUserProgress(user.id),
-        getCachedUser(user.id),
+        getUserProgress(user.id),
+        getUser(user.id),
     ])
 
     const fallbackUser: User = {

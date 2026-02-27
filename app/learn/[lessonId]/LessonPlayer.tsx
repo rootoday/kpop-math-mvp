@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { FullLesson, TierLevel, BaseTier, UserProgress, User } from '@/types'
 import confetti from 'canvas-confetti'
@@ -45,6 +45,108 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
     const [totalXp, setTotalXp] = useState(initialProgress?.xp_earned || 0)
     const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward')
 
+    // --- Study Time Tracking ---
+    const activeStartRef = useRef<number>(Date.now())
+    const accumulatedDeltaRef = useRef<number>(0)
+    const isVisibleRef = useRef<boolean>(true)
+    const flushTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    /** Accumulate active time into delta ref */
+    const pauseTimer = useCallback(() => {
+        if (isVisibleRef.current) {
+            const now = Date.now()
+            const elapsed = Math.floor((now - activeStartRef.current) / 1000)
+            if (elapsed > 0) {
+                accumulatedDeltaRef.current += elapsed
+            }
+            isVisibleRef.current = false
+        }
+    }, [])
+
+    /** Resume timer from now */
+    const resumeTimer = useCallback(() => {
+        if (!isVisibleRef.current) {
+            activeStartRef.current = Date.now()
+            isVisibleRef.current = true
+        }
+    }, [])
+
+    /** Collect delta seconds since last send and reset */
+    const collectDelta = useCallback((): number => {
+        // Grab accumulated seconds from pauses
+        let delta = accumulatedDeltaRef.current
+        // If currently active, also add time since last activeStart
+        if (isVisibleRef.current) {
+            const now = Date.now()
+            delta += Math.floor((now - activeStartRef.current) / 1000)
+            activeStartRef.current = now
+        }
+        accumulatedDeltaRef.current = 0
+        return delta
+    }, [])
+
+    /** Send time_spent delta to server (time-only, no status change) */
+    const sendTimeDelta = useCallback((delta: number) => {
+        if (delta <= 0) return
+        // Use sendBeacon for reliability on unload, fall back to fetch
+        const body = JSON.stringify({
+            lesson_id: lesson.id,
+            time_spent: delta,
+        })
+        if (typeof navigator.sendBeacon === 'function') {
+            navigator.sendBeacon('/api/progress', body)
+        } else {
+            fetch('/api/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body,
+                keepalive: true,
+            }).catch(() => { /* best-effort */ })
+        }
+    }, [lesson.id])
+
+    /** Periodic flush + visibility change + unload listeners */
+    useEffect(() => {
+        // Reset timer refs on mount
+        activeStartRef.current = Date.now()
+        accumulatedDeltaRef.current = 0
+        isVisibleRef.current = !document.hidden
+
+        const handleVisChange = () => {
+            if (document.hidden) {
+                pauseTimer()
+            } else {
+                resumeTimer()
+            }
+        }
+
+        const handleUnload = () => {
+            const delta = collectDelta()
+            sendTimeDelta(delta)
+        }
+
+        document.addEventListener('visibilitychange', handleVisChange)
+        window.addEventListener('pagehide', handleUnload)
+        window.addEventListener('beforeunload', handleUnload)
+
+        // Periodic flush every 30 seconds
+        flushTimerRef.current = setInterval(() => {
+            const delta = collectDelta()
+            sendTimeDelta(delta)
+        }, 30_000)
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisChange)
+            window.removeEventListener('pagehide', handleUnload)
+            window.removeEventListener('beforeunload', handleUnload)
+            if (flushTimerRef.current) clearInterval(flushTimerRef.current)
+            // Final flush on unmount (route change)
+            const delta = collectDelta()
+            sendTimeDelta(delta)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lesson.id])
+
     // --- Helpers ---
     const tierKeys: Record<TierLevel, keyof typeof tc> = {
         1: 'tier1', 2: 'tier2', 3: 'tier3', 4: 'tier4', 5: 'tier5',
@@ -64,6 +166,8 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
 
     // --- Progress Persistence ---
     const updateProgress = async (status: string, overrideXp?: number) => {
+        // Collect time delta alongside progress update
+        const timeDelta = collectDelta()
         try {
             await fetch('/api/progress', {
                 method: 'POST',
@@ -74,6 +178,7 @@ export default function LessonPlayer({ lesson, initialProgress }: LessonPlayerPr
                     score,
                     xp_earned: overrideXp ?? totalXp,
                     status,
+                    time_spent: timeDelta > 0 ? timeDelta : undefined,
                 }),
             })
         } catch (error) {

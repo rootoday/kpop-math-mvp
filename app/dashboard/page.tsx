@@ -1,10 +1,10 @@
-import { createServerClient, getCachedLessons, getCachedUserProgress, getCachedUser } from '@/lib/supabase/server'
+import { createServerClient, getCachedLessons, getUserProgress, getUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { User } from '@/types'
 import DashboardClient from './DashboardClient'
 
-// Enable static generation with revalidation
-export const revalidate = 3600 // Revalidate every hour
+// Force dynamic rendering — data must always be fresh after learning sessions
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
     const supabase = createServerClient()
@@ -14,11 +14,11 @@ export default async function DashboardPage() {
         redirect('/login')
     }
 
-    // Parallel data fetching
+    // Parallel data fetching — lessons can stay cached, user data must be fresh
     const [lessons, userProgress, userData] = await Promise.all([
         getCachedLessons(),
-        getCachedUserProgress(user.id),
-        getCachedUser(user.id),
+        getUserProgress(user.id),
+        getUser(user.id),
     ])
 
     const fallbackUser: User = {

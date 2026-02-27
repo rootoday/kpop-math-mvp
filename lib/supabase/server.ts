@@ -10,7 +10,8 @@ export const createServerClient = () => {
     })
 }
 
-// Cached data fetchers
+// --- Cached data fetchers (for rarely-changing data like lesson catalog) ---
+
 export const getCachedLessons = cache(async (difficulty?: 'beginner' | 'intermediate' | 'advanced') => {
     const supabase = createServerClient()
 
@@ -29,7 +30,18 @@ export const getCachedLessons = cache(async (difficulty?: 'beginner' | 'intermed
     return data
 })
 
+// Keep cached versions as aliases for backward compatibility
 export const getCachedUserProgress = cache(async (userId: string) => {
+    return getUserProgress(userId)
+})
+
+export const getCachedUser = cache(async (userId: string) => {
+    return getUser(userId)
+})
+
+// --- Non-cached fetchers (for user-specific data that must be fresh) ---
+
+export async function getUserProgress(userId: string) {
     const supabase = createServerClient()
 
     const { data, error } = await (supabase as any)
@@ -47,9 +59,9 @@ export const getCachedUserProgress = cache(async (userId: string) => {
 
     if (error) throw error
     return data
-})
+}
 
-export const getCachedUser = cache(async (userId: string) => {
+export async function getUser(userId: string) {
     const supabase = createServerClient()
 
     const { data, error } = await (supabase as any)
@@ -64,4 +76,4 @@ export const getCachedUser = cache(async (userId: string) => {
     }
 
     return data
-})
+}
