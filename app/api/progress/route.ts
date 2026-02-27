@@ -73,15 +73,23 @@ export async function POST(request: Request) {
     }
 
     // Fetch existing progress for this lesson (needed for increment logic)
-    const { data: existing } = await supabase
+    const lessonId = lesson_id as string
+    const { data: existing, error: existingError } = await supabase
         .from('user_progress')
         .select('attempts, time_spent')
-        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
         .eq('user_id', user.id)
-        .eq('lesson_id', lesson_id as string)
-        .single()
+        .eq('lesson_id', lessonId)
+        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
+        .maybeSingle()
 
-    const existingTimeSpent: number = existing?.time_spent ?? 0
+    if (existingError) {
+        return NextResponse.json(
+            { error: process.env.NODE_ENV === 'production' ? 'An error occurred' : existingError.message },
+            { status: 500 }
+        )
+    }
+
+    const existingTimeSpent = existing?.time_spent ?? 0
     const newTimeSpent = existingTimeSpent + timeDelta
 
     if (isTimeOnly) {
@@ -100,7 +108,7 @@ export async function POST(request: Request) {
                 .from('user_progress')
                 .update(updateData)
                 .eq('user_id', user.id)
-                .eq('lesson_id', lesson_id as string)
+                .eq('lesson_id', lessonId)
 
             if (error) {
                 return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
