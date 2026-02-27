@@ -37,6 +37,11 @@ export async function GET(_request: Request) {
 
 export async function POST(request: Request) {
     const supabase = createRouteHandlerClient<Database>({ cookies })
+
+    type UserProgressRow    = Database['public']['Tables']['user_progress']['Row']
+    type UserProgressUpdate = Database['public']['Tables']['user_progress']['Update']
+    type UserProgressInsert = Database['public']['Tables']['user_progress']['Insert']
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -71,11 +76,12 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
         .from('user_progress')
         .select('attempts, time_spent')
+        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
         .eq('user_id', user.id)
         .eq('lesson_id', lesson_id as string)
         .single()
 
-    const existingTimeSpent: number = (existing as any)?.time_spent || 0
+    const existingTimeSpent: number = existing?.time_spent ?? 0
     const newTimeSpent = existingTimeSpent + timeDelta
 
     if (isTimeOnly) {
@@ -86,12 +92,13 @@ export async function POST(request: Request) {
 
         if (existing) {
             // Update existing record's time_spent only
+            const updateData: UserProgressUpdate = {
+                time_spent: newTimeSpent,
+                last_accessed: new Date().toISOString(),
+            }
             const { error } = await supabase
                 .from('user_progress')
-                .update({
-                    time_spent: newTimeSpent,
-                    last_accessed: new Date().toISOString(),
-                } as any)
+                .update(updateData)
                 .eq('user_id', user.id)
                 .eq('lesson_id', lesson_id as string)
 
@@ -100,20 +107,21 @@ export async function POST(request: Request) {
             }
         } else {
             // Create a new in_progress record with the time
+            const insertData: UserProgressInsert = {
+                user_id: user.id,
+                lesson_id: lesson_id as string,
+                current_tier: 1,
+                score: 0,
+                xp_earned: 0,
+                status: 'in_progress',
+                time_spent: timeDelta,
+                attempts: 0,
+                last_accessed: new Date().toISOString(),
+                started_at: new Date().toISOString(),
+            }
             const { error } = await supabase
                 .from('user_progress')
-                .insert({
-                    user_id: user.id,
-                    lesson_id: lesson_id as string,
-                    current_tier: 1,
-                    score: 0,
-                    xp_earned: 0,
-                    status: 'in_progress',
-                    time_spent: timeDelta,
-                    attempts: 0,
-                    last_accessed: new Date().toISOString(),
-                    started_at: new Date().toISOString(),
-                } as any)
+                .insert(insertData)
 
             if (error) {
                 return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
@@ -128,23 +136,24 @@ export async function POST(request: Request) {
     }
 
     // --- Full progress update (status/score/tier change) ---
-    const newAttempts = ((existing as any)?.attempts || 0) + 1
+    const newAttempts = (existing?.attempts ?? 0) + 1
 
+    const upsertData: UserProgressInsert = {
+        user_id: user.id,
+        lesson_id: lesson_id as string,
+        current_tier: current_tier as number,
+        score: score as number,
+        xp_earned: xp_earned as number,
+        status: status as 'not_started' | 'in_progress' | 'completed',
+        time_spent: newTimeSpent,
+        attempts: newAttempts,
+        last_accessed: new Date().toISOString(),
+        started_at: existing ? undefined : new Date().toISOString(),
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
+    }
     const { data, error } = await supabase
         .from('user_progress')
-        .upsert({
-            user_id: user.id,
-            lesson_id: lesson_id as string,
-            current_tier: current_tier as number,
-            score: score as number,
-            xp_earned: xp_earned as number,
-            status: status as 'not_started' | 'in_progress' | 'completed',
-            time_spent: newTimeSpent,
-            attempts: newAttempts,
-            last_accessed: new Date().toISOString(),
-            started_at: existing ? undefined : new Date().toISOString(),
-            completed_at: status === 'completed' ? new Date().toISOString() : null,
-        } as any)
+        .upsert(upsertData)
         .select()
         .single()
 
