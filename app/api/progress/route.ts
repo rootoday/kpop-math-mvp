@@ -76,10 +76,10 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
         .from('user_progress')
         .select('attempts, time_spent')
-        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
         .eq('user_id', user.id)
         .eq('lesson_id', lesson_id as string)
-        .single()
+        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
+        .maybeSingle()
 
     const existingTimeSpent: number = existing?.time_spent ?? 0
     const newTimeSpent = existingTimeSpent + timeDelta
