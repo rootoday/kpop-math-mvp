@@ -1,4 +1,4 @@
-import type { UserProgress, Lesson, RecentActivityItem } from '@/types'
+import type { ProgressWithLesson, Lesson, RecentActivityItem, UserProgress } from '@/types'
 
 export function calculateAccuracyRate(progress: UserProgress[]): number {
     const withAttempts = progress.filter(p => p.attempts > 0)
@@ -39,7 +39,7 @@ export function formatRelativeTime(dateStr: string): string {
 }
 
 export function deriveRecentActivity(
-    progress: UserProgress[],
+    progress: ProgressWithLesson[],
     lessons: Lesson[],
     limit: number = 5
 ): RecentActivityItem[] {
@@ -48,7 +48,11 @@ export function deriveRecentActivity(
     return progress
         .filter(p => p.last_accessed || p.completed_at || p.started_at)
         .map(p => {
-            const lesson = lessonMap.get(p.lesson_id)
+            const joined = p.lessons              // join 데이터 우선 (getUserProgress에서 가져옴)
+            const fallback = lessonMap.get(p.lesson_id)  // fallback: lessons 배열 lookup
+            // 둘 다 없으면 orphan row → 최근활동에서 숨김
+            if (!joined && !fallback) return null
+
             const timestamps = [p.last_accessed, p.completed_at, p.started_at]
                 .filter(Boolean) as string[]
             const mostRecent = timestamps.sort(
@@ -64,8 +68,8 @@ export function deriveRecentActivity(
 
             return {
                 lessonId: p.lesson_id,
-                lessonTitle: lesson?.title || 'Unknown Lesson',
-                artist: lesson?.artist || '',
+                lessonTitle: joined?.title ?? fallback!.title,
+                artist: joined?.artist ?? fallback?.artist ?? '',
                 score: p.score,
                 xpEarned: p.xp_earned,
                 action,
@@ -73,6 +77,7 @@ export function deriveRecentActivity(
                 currentTier: p.current_tier,
             }
         })
+        .filter((item): item is RecentActivityItem => item !== null)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, limit)
 }

@@ -1,6 +1,7 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
+import type { ProgressWithLesson } from '@/types'
 import { cache } from 'react'
 
 // Server-side Supabase client factory
@@ -41,7 +42,7 @@ export const getCachedUser = cache(async (userId: string) => {
 
 // --- Non-cached fetchers (for user-specific data that must be fresh) ---
 
-export async function getUserProgress(userId: string) {
+export async function getUserProgress(userId: string): Promise<ProgressWithLesson[]> {
     const supabase = createServerClient()
 
     const { data, error } = await (supabase as any)
@@ -58,7 +59,8 @@ export async function getUserProgress(userId: string) {
         .eq('user_id', userId)
 
     if (error) throw error
-    return data
+    // 반환 직전에만 캐스팅 — 중간 로직은 기존과 동일
+    return (data ?? []) as ProgressWithLesson[]
 }
 
 export async function getUser(userId: string) {
