@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import type { Database } from '@/types/database.types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Max delta seconds we accept in a single request (6 hours)
 const MAX_DELTA_SECONDS = 6 * 60 * 60
@@ -36,7 +37,7 @@ export async function GET(_request: Request) {
 }
 
 export async function POST(request: Request) {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const supabase = createRouteHandlerClient<Database>({ cookies }) as unknown as SupabaseClient<Database>
 
     type UserProgressRow    = Database['public']['Tables']['user_progress']['Row']
     type UserProgressUpdate = Database['public']['Tables']['user_progress']['Update']
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
     if (!lesson_id) {
         return NextResponse.json({ error: 'lesson_id is required' }, { status: 400 })
     }
+
+    const lessonId = lesson_id as string
 
     // Sanitize time_spent delta: must be positive and reasonable
     let timeDelta = typeof time_spent === 'number' ? Math.floor(time_spent) : 0
@@ -73,13 +76,20 @@ export async function POST(request: Request) {
     }
 
     // Fetch existing progress for this lesson (needed for increment logic)
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
         .from('user_progress')
         .select('attempts, time_spent')
-        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>>()
         .eq('user_id', user.id)
-        .eq('lesson_id', lesson_id as string)
-        .single()
+        .eq('lesson_id', lessonId)
+        .returns<Pick<UserProgressRow, 'attempts' | 'time_spent'>[]>()
+        .maybeSingle()
+
+    if (existingError) {
+        return NextResponse.json(
+            { error: process.env.NODE_ENV === 'production' ? 'An error occurred' : existingError.message },
+            { status: 500 }
+        )
+    }
 
     const existingTimeSpent: number = existing?.time_spent ?? 0
     const newTimeSpent = existingTimeSpent + timeDelta
@@ -100,7 +110,7 @@ export async function POST(request: Request) {
                 .from('user_progress')
                 .update(updateData)
                 .eq('user_id', user.id)
-                .eq('lesson_id', lesson_id as string)
+                .eq('lesson_id', lessonId)
 
             if (error) {
                 return NextResponse.json({ error: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message }, { status: 500 })
@@ -109,7 +119,7 @@ export async function POST(request: Request) {
             // Create a new in_progress record with the time
             const insertData: UserProgressInsert = {
                 user_id: user.id,
-                lesson_id: lesson_id as string,
+                lesson_id: lessonId,
                 current_tier: 1,
                 score: 0,
                 xp_earned: 0,
@@ -140,7 +150,7 @@ export async function POST(request: Request) {
 
     const upsertData: UserProgressInsert = {
         user_id: user.id,
-        lesson_id: lesson_id as string,
+        lesson_id: lessonId,
         current_tier: current_tier as number,
         score: score as number,
         xp_earned: xp_earned as number,
