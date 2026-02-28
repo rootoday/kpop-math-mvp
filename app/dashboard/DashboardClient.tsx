@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { Lesson, UserProgress, User, LessonProgressChartData } from '@/types'
+import type { Lesson, ProgressWithLesson, User, LessonProgressChartData } from '@/types'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import {
     calculateAccuracyRate,
@@ -34,7 +34,7 @@ const ProgressChart = dynamic(() => import('./components/ProgressChart'), {
 
 interface DashboardClientProps {
     lessons: Lesson[]
-    progress: UserProgress[]
+    progress: ProgressWithLesson[]
     user: User
 }
 
@@ -60,21 +60,31 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
         currentStreak: user.current_streak,
     }), [user, lessons, progress])
 
+    // lessons 배열을 Map으로 변환 — chartData/recentActivity가 매번 재생성하지 않도록 별도 메모이제이션
+    const lessonsMap = useMemo(
+        () => new Map(lessons.map(l => [l.id, l])),
+        [lessons]
+    )
+
     const chartData = useMemo<LessonProgressChartData[]>(() => {
         return progress
             .filter(p => p.status !== 'not_started')
             .map(p => {
-                const lesson = lessons.find(l => l.id === p.lesson_id)
+                const joined = p.lessons              // join 데이터 우선 (getUserProgress에서 가져옴)
+                const fallback = lessonsMap.get(p.lesson_id)  // fallback: lessons 배열 lookup
+                // 둘 다 없으면 orphan row → 차트에서 숨김
+                if (!joined && !fallback) return null
                 return {
-                    lessonTitle: lesson?.title || 'Unknown',
-                    artist: lesson?.artist || '',
+                    lessonTitle: joined?.title ?? fallback!.title,
+                    artist: joined?.artist ?? fallback?.artist ?? '',
                     currentTier: p.current_tier,
                     progressPercent: (p.current_tier / 5) * 100,
-                    difficulty: lesson?.difficulty || 'beginner',
+                    difficulty: joined?.difficulty ?? fallback?.difficulty ?? 'beginner',
                     status: p.status,
                 }
             })
-    }, [progress, lessons])
+            .filter((d): d is LessonProgressChartData => d !== null)
+    }, [progress, lessonsMap])
 
     const recentActivity = useMemo(
         () => deriveRecentActivity(progress, lessons, 5),

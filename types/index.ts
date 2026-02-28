@@ -63,6 +63,21 @@ export interface LessonProgressChartData {
     status: 'not_started' | 'in_progress' | 'completed'
 }
 
+// getUserProgress() Supabase join 결과 스냅샷
+// difficulty는 Lesson 타입에서 직접 참조해 단일 소스 유지
+export interface LessonSnapshot {
+    id: string
+    title: string
+    artist: string
+    difficulty: Lesson['difficulty'] | null
+}
+
+// getUserProgress()가 lessons join을 포함해 반환하는 타입
+// 기존 UserProgress는 그대로 두고 확장
+export interface ProgressWithLesson extends UserProgress {
+    lessons: LessonSnapshot | null  // join 성공 시 채워짐, orphan이면 null
+}
+
 // Dashboard recent activity
 export interface RecentActivityItem {
     lessonId: string
