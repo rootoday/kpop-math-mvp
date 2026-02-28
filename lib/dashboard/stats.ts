@@ -48,13 +48,21 @@ export function deriveRecentActivity(
     return progress
         .filter(p => p.last_accessed || p.completed_at || p.started_at)
         .map(p => {
-            const joined = p.lessons              // join 데이터 우선 (getUserProgress에서 가져옴)
+            const joined = (() => {
+                const raw: unknown = (p as any).lessons
+                return Array.isArray(raw) ? raw[0] : raw
+            })() as typeof p.lessons              // join 데이터 우선; 배열 방어 포함
             const fallback = lessonMap.get(p.lesson_id)  // fallback: lessons 배열 lookup
             // 둘 다 없으면 orphan row → 최근활동에서 숨김
             if (!joined && !fallback) return null
 
+            const title = joined?.title ?? fallback?.title
+            // Defensive: avoid non-null assertion; also guards against unexpected empty title.
+            if (!title) return null
+
             const timestamps = [p.last_accessed, p.completed_at, p.started_at]
-                .filter(Boolean) as string[]
+                .filter(Boolean).map(String)
+            // Keep original behavior: sort to pick most recent timestamp.
             const mostRecent = timestamps.sort(
                 (a, b) => new Date(b).getTime() - new Date(a).getTime()
             )[0]
@@ -68,7 +76,7 @@ export function deriveRecentActivity(
 
             return {
                 lessonId: p.lesson_id,
-                lessonTitle: joined?.title ?? fallback!.title,
+                lessonTitle: title,
                 artist: joined?.artist ?? fallback?.artist ?? '',
                 score: p.score,
                 xpEarned: p.xp_earned,

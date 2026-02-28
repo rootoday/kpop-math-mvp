@@ -70,12 +70,18 @@ export default function DashboardClient({ lessons, progress, user }: DashboardCl
         return progress
             .filter(p => p.status !== 'not_started')
             .map(p => {
-                const joined = p.lessons              // join 데이터 우선 (getUserProgress에서 가져옴)
+                const joined = (() => {
+                    const raw: unknown = (p as any).lessons
+                    return Array.isArray(raw) ? raw[0] : raw
+                })() as typeof p.lessons              // join 데이터 우선; 배열 방어 포함
                 const fallback = lessonsMap.get(p.lesson_id)  // fallback: lessons 배열 lookup
                 // 둘 다 없으면 orphan row → 차트에서 숨김
                 if (!joined && !fallback) return null
+                const title = joined?.title ?? fallback?.title
+                // Defensive: avoid non-null assertion; also guards against unexpected empty title.
+                if (!title) return null
                 return {
-                    lessonTitle: joined?.title ?? fallback!.title,
+                    lessonTitle: title,
                     artist: joined?.artist ?? fallback?.artist ?? '',
                     currentTier: p.current_tier,
                     progressPercent: (p.current_tier / 5) * 100,
